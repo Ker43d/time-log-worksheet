@@ -841,6 +841,7 @@
           moneyForRange('2025-09-01',null)===null,
           'moneyForRange null-guard failed'
         );
+
         if (original!==null) localStorage.setItem('tlw-data', original);
         else localStorage.removeItem('tlw-data');
       } catch(err) { console.warn('Self-tests skipped:', err); }
@@ -855,6 +856,8 @@
   </script>
 </body>
 </html>
+
+
 
 
 
