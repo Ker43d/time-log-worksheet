@@ -841,14 +841,13 @@
           moneyForRange('2025-09-01',null)===null,
           'moneyForRange null-guard failed'
         );
-
         if (original!==null) localStorage.setItem('tlw-data', original);
         else localStorage.removeItem('tlw-data');
       } catch(err) { console.warn('Self-tests skipped:', err); }
     })();
   </script>
 
-  <!-- PWA: register service worker -->
+  <!-- PWA: register service worker (keep only one copy if you already added this elsewhere) -->
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("service-worker.js");
@@ -856,5 +855,7 @@
   </script>
 </body>
 </html>
+
+
 
 
