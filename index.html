@@ -512,65 +512,83 @@
       });
     }
 
-    // Simple photo handlers (data URL approach) — no single preview, everything goes to the grid (newest first)
-    function bindUploadButtons(){
-      var btnCam     = document.getElementById('btnCamera');
-      var btnUp      = document.getElementById('btnUpload');
-      var btnMore    = document.getElementById('btnAddMore');
-      var btnMoreCam = document.getElementById('btnAddMoreCam');
-      var btnClear   = document.getElementById('btnClearPhotos');
-    
-      var camInp     = document.getElementById('camCapture');
-      var camMoreInp = document.getElementById('camCaptureMore');
-      var upInp      = document.getElementById('fileUpload');
-      var moreInp    = document.getElementById('fileUploadMore');
-      var holder     = document.getElementById('thumbs');
-    
-      function addThumb(dataUrl){
-        var th = document.createElement('div');
-        th.className = 'thumb small';
-        th.style.backgroundImage = 'url('+dataUrl+')';
-        th.dataset.dataUrl = dataUrl;
-        holder.prepend(th); // newest first
-      }
-    
-      function handleFile(file){
-        if(!file) return;
-        // compress to keep localStorage small
-        compressImage(file, 1280, 0.72).then(function(dataUrl){
-          addThumb(dataUrl);
-        }).catch(function(){
-          var r = new FileReader();
-          r.onload = function(){ addThumb(r.result); };
-          r.readAsDataURL(file);
-        });
-      }
-    
-      if (btnCam     && camInp)     btnCam.onclick     = function(){ camInp.click(); };
-      if (btnUp      && upInp)      btnUp.onclick      = function(){ upInp.click(); };
-      if (btnMore    && moreInp)    btnMore.onclick    = function(){ moreInp.click(); };
-      if (btnMoreCam && camMoreInp) btnMoreCam.onclick = function(){ camMoreInp.click(); };
-    
-      if (camInp)     camInp.onchange     = function(e){ handleFile(e.target.files && e.target.files[0]); e.target.value=''; };
-      if (upInp)      upInp.onchange      = function(e){ handleFile(e.target.files && e.target.files[0]); e.target.value=''; };
-      if (camMoreInp) camMoreInp.onchange = function(e){ handleFile(e.target.files && e.target.files[0]); e.target.value=''; };
-      if (moreInp)    moreInp.onchange    = function(e){
-        var files = [ ...(e.target.files||[]) ];
-        files.forEach(handleFile);
-        e.target.value='';
-      };
-    
-      if (btnClear){
-        btnClear.onclick = function(){
-          holder.innerHTML = '';
-          if (camInp) camInp.value='';
-          if (upInp) upInp.value='';
-          if (moreInp) moreInp.value='';
-          if (camMoreInp) camMoreInp.value='';
-        };
-      }
+function bindUploadButtons(){
+  var btnCam = document.getElementById('btnCamera');
+  var btnUp  = document.getElementById('btnUpload');
+  var btnMore= document.getElementById('btnAddMore');
+  var btnMoreCam = document.getElementById('btnAddMoreCam');
+  var btnClear = document.getElementById('btnClearPhotos');
+
+  var camInp = document.getElementById('camCapture');
+  var camMoreInp = document.getElementById('camCaptureMore');
+  var upInp  = document.getElementById('fileUpload');
+  var moreInp= document.getElementById('fileUploadMore');
+
+  function addThumb(dataUrl){
+    var th = document.createElement('div');
+    th.className = 'thumb small';
+    th.style.backgroundImage = 'url('+dataUrl+')';
+    th.dataset.dataUrl = dataUrl;
+    document.getElementById('thumbs').appendChild(th);
+  }
+
+  function setMain(dataUrl){
+    var main = document.getElementById('thumb');
+    // if main already has a photo, move it down into the gallery first
+    if (main && main.dataset && main.dataset.dataUrl){
+      addThumb(main.dataset.dataUrl);
     }
-    bindUploadButtons();
+    // now set the new main
+    main.style.backgroundImage = 'url('+dataUrl+')';
+    main.dataset.dataUrl = dataUrl;
+  }
+
+  function handleFile(file, mode){ // mode: 'main' | 'append'
+    if(!file) return;
+    // Compress before showing/saving to keep storage low
+    compressImage(file, 1280, 0.72).then(function(dataUrl){
+      if (mode === 'append') addThumb(dataUrl);
+      else setMain(dataUrl);
+    }).catch(function(){
+      var r = new FileReader();
+      r.onload = function(){
+        var dataUrl = r.result;
+        if (mode === 'append') addThumb(dataUrl);
+        else setMain(dataUrl);
+      };
+      r.readAsDataURL(file);
+    });
+  }
+
+  if (btnCam && camInp) btnCam.onclick = function(){ camInp.click(); };
+  if (btnUp  && upInp)  btnUp.onclick  = function(){ upInp.click(); };
+  if (btnMore)          btnMore.onclick= function(){ if (moreInp) moreInp.click(); };
+  if (btnMoreCam)       btnMoreCam.onclick = function(){ if (camMoreInp) camMoreInp.click(); };
+
+  if (btnClear){
+    btnClear.onclick = function(){
+      var main = document.getElementById('thumb');
+      if (main){ main.style.backgroundImage=''; if (main.dataset) delete main.dataset.dataUrl; }
+      var ts = document.getElementById('thumbs'); if (ts) ts.innerHTML = '';
+      if (camInp) camInp.value = '';
+      if (upInp) upInp.value = '';
+      if (moreInp) moreInp.value = '';
+      if (camMoreInp) camMoreInp.value = '';
+    };
+  }
+
+  // Camera/Upload → set as MAIN (previous main moves down)
+  if (camInp)      camInp.onchange      = function(e){ handleFile(e.target.files && e.target.files[0], 'main'); };
+  if (upInp)       upInp.onchange       = function(e){ handleFile(e.target.files && e.target.files[0], 'main'); };
+
+  // “Add Photo” / “+ Camera” → APPEND to bottom gallery
+  if (moreInp)     moreInp.onchange     = function(e){
+    var files = [ ...(e.target.files || []) ];
+    files.forEach(function(f){ handleFile(f, 'append'); });
+    e.target.value = '';
+  };
+  if (camMoreInp)  camMoreInp.onchange  = function(e){ handleFile(e.target.files && e.target.files[0], 'append'); };
+}
 
     function openForm(dateKey) {
       $('#screen-home').classList.remove('active');
@@ -855,6 +873,7 @@
   </script>
 </body>
 </html>
+
 
 
 
