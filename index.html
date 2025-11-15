@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Time Log Worksheet</title>
   <style>
     :root {
@@ -131,6 +131,16 @@
       50%{ box-shadow: 0 16px 26px #e11d2e66; }
       100%{ box-shadow: 0 8px 18px #e11d2e55; }
     }
+
+    /* Prevent mobile auto-zoom when focusing inputs */
+input, select, textarea {
+  font-size: 16px !important;   /* 16+ px avoids iOS/Android focus zoom */
+}
+
+/* iOS-specific guard (optional) */
+@supports (-webkit-touch-callout: none) {
+  input, select, textarea { font-size: 16px !important; }
+}
 
   </style>
 </head>
@@ -848,3 +858,4 @@
   </script>
 </body>
 </html>
+
