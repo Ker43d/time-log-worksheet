@@ -4,6 +4,27 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Time Log Worksheet</title>
+  <!-- Basic -->
+<meta name="description" content="Simple timesheet you can install. Log regular & overtime hours, photos, and see pay totals fast." />
+<link rel="icon" href="app-icon-192.png" />
+<link rel="apple-touch-icon" href="app-icon-512.png" />
+<meta name="theme-color" content="#e21d2f" />
+
+<!-- Open Graph (Link previews: iMessage, WhatsApp, FB, Slack) -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="LogSheet" />
+<meta property="og:description" content="Simple, installable time log & pay tracker." />
+<meta property="og:url" content="https://ker43d.github.io/time-log-worksheet/" />
+<meta property="og:image" content="https://ker43d.github.io/time-log-worksheet/app-icon-512.png" />
+<meta property="og:image:width" content="512" />
+<meta property="og:image:height" content="512" />
+
+<!-- Twitter / X -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="LogSheet" />
+<meta name="twitter:description" content="Simple, installable time log & pay tracker." />
+<meta name="twitter:image" content="https://ker43d.github.io/time-log-worksheet/app-icon-512.png" />
+
   <style>
     :root {
       --bg: #f5f6f8;
@@ -18,6 +39,15 @@
       --ring: #1b2333;
       --green: #16a34a;
       --blue: #0ea5e9;
+      /* Share card modal (reuses your overlay look) */
+.share-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; z-index:9998; }
+.share-overlay.show{ display:flex; }
+.share-card{ width:min(380px,92vw); background:#fff; border-radius:16px; padding:18px; box-shadow:0 14px 40px #0006; }
+.share-title{ font-weight:900; font-size:18px; margin:0 0 6px; }
+.share-sub{ color:#6b7280; font-size:13px; margin-bottom:12px; }
+.share-qr{ display:grid; place-items:center; margin:12px 0; }
+.share-actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:10px; }
+.linkbox{ display:flex; gap:8px; align-items:center; background:#f8fafc; border:1px solid #e5e7eb; padding:8px 10px; border-radius:10px; font-size:12px; overflow:auto; }
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html, body { height: 100%; }
@@ -136,15 +166,12 @@
     input, select, textarea {
       font-size: 16px !important;   /* 16+ px avoids iOS/Android focus zoom */
     }
-    
+
     /* iOS-specific guard (optional) */
     @supports (-webkit-touch-callout: none) {
       input, select, textarea { font-size: 16px !important; }
     }
-
-    html, body { width:100%; overflow-x:hidden; }   /* prevent sideways scroll/cutoff */
-    .app { width:100%; max-width:420px; margin-inline:auto; }  /* hard-center the app */
-
+    
   </style>
 </head>
 <body>
@@ -170,10 +197,11 @@
               <div class="dow"><div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div></div>
               <div class="days" id="days"></div>
             </div>
-            <div class="cal-footer">
-              <div class="fab" id="fab" title="Add hours"></div>
-              <div class="hint">Tap the red cross to add hours for a day</div>
-            </div>
+<div class="cal-footer" style="display:grid; gap:10px">
+  <div class="fab" id="fab" title="Add hours"></div>
+  <div class="hint">Tap the red cross to add hours for a day</div>
+  <button class="iconbtn" id="shareBtn" type="button" style="justify-self:center">🔗 Share / QR</button>
+</div>
           </div>
         </div>
       </div>
@@ -239,6 +267,7 @@
           <input type="file" accept="image/*" id="fileUpload" hidden />
           <input type="file" accept="image/*" id="fileUploadMore" hidden multiple />
           <input type="file" accept="image/*" capture="environment" id="camCaptureMore" hidden />
+          <div class="thumb" id="thumb"></div>
           <div class="thumbs" id="thumbs"></div>
         </div>
         <button class="btn" type="button" id="saveAll" onclick="saveAndShow();">Save</button>
@@ -287,6 +316,28 @@
         <div style="display:flex;gap:10px;justify-content:center">
           <button class="closebtn" id="backToForm" style="background:#111827">Back</button>
           <button class="closebtn" id="closeActivity">Home</button>
+        </div>
+        <!-- Share / QR overlay -->
+        <div id="shareOverlay" class="share-overlay" aria-hidden="true">
+          <div class="share-card">
+            <div class="share-title">Share LogSheet</div>
+            <div class="share-sub">Send the link or scan the QR to open & install.</div>
+
+            <div class="linkbox">
+              <span id="shareUrlText">https://ker43d.github.io/time-log-worksheet/</span>
+              <button class="iconbtn" id="copyLinkBtn" type="button">Copy</button>
+            </div>
+
+            <div class="share-qr">
+              <img id="qrImg" alt="QR code" width="220" height="220"
+                  src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https%3A%2F%2Fker43d.github.io%2Ftime-log-worksheet%2F" />
+            </div>
+
+            <div class="share-actions">
+              <button class="iconbtn" id="nativeShareBtn" type="button">System Share</button>
+              <button class="closebtn" id="closeShareBtn" type="button">Close</button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -460,8 +511,10 @@
       };
       // Collect photos as data URLs
       const t = document.getElementById('thumb');
-      const extra  = $$('#thumbs .thumb');
-      const photos = extra.map(el => el.dataset && el.dataset.dataUrl).filter(Boolean);
+      const extra = $$('#thumbs .thumb');
+      const photos = [];
+      if (t && t.dataset && t.dataset.dataUrl) photos.push(t.dataset.dataUrl);
+      extra.forEach(el=>{ if(el.dataset && el.dataset.dataUrl) photos.push(el.dataset.dataUrl); });
       if (photos.length) rec.photos = photos;
 
       const store = load();
@@ -512,6 +565,7 @@
       });
     }
 
+// Simple photo handlers (data URL approach)
 function bindUploadButtons(){
   var btnCam = document.getElementById('btnCamera');
   var btnUp  = document.getElementById('btnUpload');
@@ -524,71 +578,82 @@ function bindUploadButtons(){
   var upInp  = document.getElementById('fileUpload');
   var moreInp= document.getElementById('fileUploadMore');
 
+  var mainEl = document.getElementById('thumb');
+  var thumbsWrap = document.getElementById('thumbs');
+
+  function hasMain(){
+    return !!(mainEl && mainEl.dataset && mainEl.dataset.dataUrl);
+  }
+  function setMain(dataUrl){
+    if (!mainEl) return;
+    mainEl.style.backgroundImage = 'url('+dataUrl+')';
+    mainEl.dataset.dataUrl = dataUrl;
+  }
   function addThumb(dataUrl){
     var th = document.createElement('div');
     th.className = 'thumb small';
     th.style.backgroundImage = 'url('+dataUrl+')';
     th.dataset.dataUrl = dataUrl;
-    document.getElementById('thumbs').appendChild(th);
+    thumbsWrap.appendChild(th);
   }
 
-  function setMain(dataUrl){
-    var main = document.getElementById('thumb');
-    // if main already has a photo, move it down into the gallery first
-    if (main && main.dataset && main.dataset.dataUrl){
-      addThumb(main.dataset.dataUrl);
-    }
-    // now set the new main
-    main.style.backgroundImage = 'url('+dataUrl+')';
-    main.dataset.dataUrl = dataUrl;
+  // Promote any small thumb to "main" when tapped (optional QoL)
+  if (thumbsWrap){
+    thumbsWrap.addEventListener('click', function(e){
+      var el = e.target.closest('.thumb.small');
+      if (!el) return;
+      if (!el.dataset || !el.dataset.dataUrl) return;
+      setMain(el.dataset.dataUrl);
+    });
   }
 
-  function handleFile(file, mode){ // mode: 'main' | 'append'
+  // Core handler: first image fills the big slot; all others append
+  function handleFile(file){
     if(!file) return;
-    // Compress before showing/saving to keep storage low
     compressImage(file, 1280, 0.72).then(function(dataUrl){
-      if (mode === 'append') addThumb(dataUrl);
-      else setMain(dataUrl);
+      if (!hasMain()) setMain(dataUrl);
+      else addThumb(dataUrl);
     }).catch(function(){
+      // Fallback: raw file
       var r = new FileReader();
       r.onload = function(){
         var dataUrl = r.result;
-        if (mode === 'append') addThumb(dataUrl);
-        else setMain(dataUrl);
+        if (!hasMain()) setMain(dataUrl);
+        else addThumb(dataUrl);
       };
       r.readAsDataURL(file);
     });
   }
 
+  // Buttons → inputs
   if (btnCam && camInp) btnCam.onclick = function(){ camInp.click(); };
   if (btnUp  && upInp)  btnUp.onclick  = function(){ upInp.click(); };
-  if (btnMore)          btnMore.onclick= function(){ if (moreInp) moreInp.click(); };
-  if (btnMoreCam)       btnMoreCam.onclick = function(){ if (camMoreInp) camMoreInp.click(); };
+  if (btnMore && moreInp) btnMore.onclick = function(){ moreInp.click(); };
+  if (btnMoreCam && camMoreInp) btnMoreCam.onclick = function(){ camMoreInp.click(); };
 
+  // Clear all photos
   if (btnClear){
     btnClear.onclick = function(){
-      var main = document.getElementById('thumb');
-      if (main){ main.style.backgroundImage=''; if (main.dataset) delete main.dataset.dataUrl; }
-      var ts = document.getElementById('thumbs'); if (ts) ts.innerHTML = '';
-      if (camInp) camInp.value = '';
-      if (upInp) upInp.value = '';
-      if (moreInp) moreInp.value = '';
-      if (camMoreInp) camMoreInp.value = '';
+      if (mainEl){ mainEl.style.backgroundImage=''; if (mainEl.dataset) delete mainEl.dataset.dataUrl; }
+      if (thumbsWrap) thumbsWrap.innerHTML='';
+      if (camInp) camInp.value='';
+      if (upInp) upInp.value='';
+      if (moreInp) moreInp.value='';
+      if (camMoreInp) camMoreInp.value='';
     };
   }
 
-  // Camera/Upload → set as MAIN (previous main moves down)
-  if (camInp)      camInp.onchange      = function(e){ handleFile(e.target.files && e.target.files[0], 'main'); };
-  if (upInp)       upInp.onchange       = function(e){ handleFile(e.target.files && e.target.files[0], 'main'); };
-
-  // “Add Photo” / “+ Camera” → APPEND to bottom gallery
-  if (moreInp)     moreInp.onchange     = function(e){
+  // Inputs → files (all go through the same handler; auto place main-or-append)
+  if (camInp) camInp.onchange = function(e){ handleFile(e.target.files && e.target.files[0]); e.target.value=''; };
+  if (upInp)  upInp.onchange  = function(e){ handleFile(e.target.files && e.target.files[0]); e.target.value=''; };
+  if (camMoreInp) camMoreInp.onchange = function(e){ handleFile(e.target.files && e.target.files[0]); e.target.value=''; };
+  if (moreInp) moreInp.onchange = function(e){
     var files = [ ...(e.target.files || []) ];
-    files.forEach(function(f){ handleFile(f, 'append'); });
-    e.target.value = '';
+    files.forEach(function(f){ handleFile(f); });
+    e.target.value='';
   };
-  if (camMoreInp)  camMoreInp.onchange  = function(e){ handleFile(e.target.files && e.target.files[0], 'append'); };
 }
+bindUploadButtons();
 
     function openForm(dateKey) {
       $('#screen-home').classList.remove('active');
@@ -809,6 +874,56 @@ function bindUploadButtons(){
       if (!meta.activeColor) { meta.activeColor = 'orange'; writeMeta(meta); }
       paintHome();
     })();
+// ===== Share / QR =====
+(function shareFeature(){
+  // Change this if your Pages URL is different
+  const APP_URL = 'https://ker43d.github.io/time-log-worksheet/';
+
+  const btn = document.getElementById('shareBtn');
+  const overlay = document.getElementById('shareOverlay');
+  const closeBtn = document.getElementById('closeShareBtn');
+  const copyBtn = document.getElementById('copyLinkBtn');
+  const nativeBtn = document.getElementById('nativeShareBtn');
+  const urlEl = document.getElementById('shareUrlText');
+  const qrImg = document.getElementById('qrImg');
+
+  if (!btn || !overlay) return;
+
+  // Keep URL + QR in sync (in case you change the URL later)
+  function setUrl(u){
+    urlEl.textContent = u;
+    qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' + encodeURIComponent(u);
+  }
+  setUrl(APP_URL);
+
+  function openSheet(){ overlay.classList.add('show'); overlay.setAttribute('aria-hidden','false'); }
+  function closeSheet(){ overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true'); }
+
+  btn.addEventListener('click', async () => {
+    // Try native share first (best UX on phones)
+    if (navigator.share) {
+      try {
+        await navigator.share({ title:'LogSheet', text:'Track hours & pay fast', url: APP_URL });
+        return;
+      } catch(_) { /* user canceled or not supported */ }
+    }
+    openSheet();
+  });
+
+  copyBtn.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(APP_URL); copyBtn.textContent = 'Copied!'; setTimeout(()=>copyBtn.textContent='Copy', 1200); }
+    catch(_) { alert('Copy failed—long-press the link to copy.'); }
+  });
+
+  nativeBtn.addEventListener('click', async () => {
+    if (!navigator.share) { openSheet(); return; }
+    try { await navigator.share({ title:'LogSheet', text:'Track hours & pay fast', url: APP_URL }); }
+    catch(_) { /* ignore */ }
+  });
+
+  closeBtn.addEventListener('click', closeSheet);
+  overlay.addEventListener('click', (e)=>{ if (e.target === overlay) closeSheet(); });
+})();
 
     // ===== Lightbox (view saved photos) =====
 ; (function lightbox(){
@@ -873,7 +988,3 @@ function bindUploadButtons(){
   </script>
 </body>
 </html>
-
-
-
-
