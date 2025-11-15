@@ -133,14 +133,17 @@
     }
 
     /* Prevent mobile auto-zoom when focusing inputs */
-input, select, textarea {
-  font-size: 16px !important;   /* 16+ px avoids iOS/Android focus zoom */
-}
+    input, select, textarea {
+      font-size: 16px !important;   /* 16+ px avoids iOS/Android focus zoom */
+    }
+    
+    /* iOS-specific guard (optional) */
+    @supports (-webkit-touch-callout: none) {
+      input, select, textarea { font-size: 16px !important; }
+    }
 
-/* iOS-specific guard (optional) */
-@supports (-webkit-touch-callout: none) {
-  input, select, textarea { font-size: 16px !important; }
-}
+    html, body { width:100%; overflow-x:hidden; }   /* prevent sideways scroll/cutoff */
+    .app { width:100%; max-width:420px; margin-inline:auto; }  /* hard-center the app */
 
   </style>
 </head>
@@ -236,7 +239,6 @@ input, select, textarea {
           <input type="file" accept="image/*" id="fileUpload" hidden />
           <input type="file" accept="image/*" id="fileUploadMore" hidden multiple />
           <input type="file" accept="image/*" capture="environment" id="camCaptureMore" hidden />
-          <div class="thumb" id="thumb"></div>
           <div class="thumbs" id="thumbs"></div>
         </div>
         <button class="btn" type="button" id="saveAll" onclick="saveAndShow();">Save</button>
@@ -458,10 +460,8 @@ input, select, textarea {
       };
       // Collect photos as data URLs
       const t = document.getElementById('thumb');
-      const extra = $$('#thumbs .thumb');
-      const photos = [];
-      if (t && t.dataset && t.dataset.dataUrl) photos.push(t.dataset.dataUrl);
-      extra.forEach(el=>{ if(el.dataset && el.dataset.dataUrl) photos.push(el.dataset.dataUrl); });
+      const extra  = $$('#thumbs .thumb');
+      const photos = extra.map(el => el.dataset && el.dataset.dataUrl).filter(Boolean);
       if (photos.length) rec.photos = photos;
 
       const store = load();
@@ -512,96 +512,65 @@ input, select, textarea {
       });
     }
 
-// Simple photo handlers (data URL approach)
-function bindUploadButtons(){
-  var btnCam = document.getElementById('btnCamera');
-  var btnUp  = document.getElementById('btnUpload');
-  var btnMore= document.getElementById('btnAddMore');
-  var btnMoreCam = document.getElementById('btnAddMoreCam');
-  var btnClear = document.getElementById('btnClearPhotos');
-
-  var camInp = document.getElementById('camCapture');
-  var camMoreInp = document.getElementById('camCaptureMore');
-  var upInp  = document.getElementById('fileUpload');
-  var moreInp= document.getElementById('fileUploadMore');
-
-  var mainEl = document.getElementById('thumb');
-  var thumbsWrap = document.getElementById('thumbs');
-
-  function hasMain(){
-    return !!(mainEl && mainEl.dataset && mainEl.dataset.dataUrl);
-  }
-  function setMain(dataUrl){
-    if (!mainEl) return;
-    mainEl.style.backgroundImage = 'url('+dataUrl+')';
-    mainEl.dataset.dataUrl = dataUrl;
-  }
-  function addThumb(dataUrl){
-    var th = document.createElement('div');
-    th.className = 'thumb small';
-    th.style.backgroundImage = 'url('+dataUrl+')';
-    th.dataset.dataUrl = dataUrl;
-    thumbsWrap.appendChild(th);
-  }
-
-  // Promote any small thumb to "main" when tapped (optional QoL)
-  if (thumbsWrap){
-    thumbsWrap.addEventListener('click', function(e){
-      var el = e.target.closest('.thumb.small');
-      if (!el) return;
-      if (!el.dataset || !el.dataset.dataUrl) return;
-      setMain(el.dataset.dataUrl);
-    });
-  }
-
-  // Core handler: first image fills the big slot; all others append
-  function handleFile(file){
-    if(!file) return;
-    compressImage(file, 1280, 0.72).then(function(dataUrl){
-      if (!hasMain()) setMain(dataUrl);
-      else addThumb(dataUrl);
-    }).catch(function(){
-      // Fallback: raw file
-      var r = new FileReader();
-      r.onload = function(){
-        var dataUrl = r.result;
-        if (!hasMain()) setMain(dataUrl);
-        else addThumb(dataUrl);
+    // Simple photo handlers (data URL approach) — no single preview, everything goes to the grid (newest first)
+    function bindUploadButtons(){
+      var btnCam     = document.getElementById('btnCamera');
+      var btnUp      = document.getElementById('btnUpload');
+      var btnMore    = document.getElementById('btnAddMore');
+      var btnMoreCam = document.getElementById('btnAddMoreCam');
+      var btnClear   = document.getElementById('btnClearPhotos');
+    
+      var camInp     = document.getElementById('camCapture');
+      var camMoreInp = document.getElementById('camCaptureMore');
+      var upInp      = document.getElementById('fileUpload');
+      var moreInp    = document.getElementById('fileUploadMore');
+      var holder     = document.getElementById('thumbs');
+    
+      function addThumb(dataUrl){
+        var th = document.createElement('div');
+        th.className = 'thumb small';
+        th.style.backgroundImage = 'url('+dataUrl+')';
+        th.dataset.dataUrl = dataUrl;
+        holder.prepend(th); // newest first
+      }
+    
+      function handleFile(file){
+        if(!file) return;
+        // compress to keep localStorage small
+        compressImage(file, 1280, 0.72).then(function(dataUrl){
+          addThumb(dataUrl);
+        }).catch(function(){
+          var r = new FileReader();
+          r.onload = function(){ addThumb(r.result); };
+          r.readAsDataURL(file);
+        });
+      }
+    
+      if (btnCam     && camInp)     btnCam.onclick     = function(){ camInp.click(); };
+      if (btnUp      && upInp)      btnUp.onclick      = function(){ upInp.click(); };
+      if (btnMore    && moreInp)    btnMore.onclick    = function(){ moreInp.click(); };
+      if (btnMoreCam && camMoreInp) btnMoreCam.onclick = function(){ camMoreInp.click(); };
+    
+      if (camInp)     camInp.onchange     = function(e){ handleFile(e.target.files && e.target.files[0]); e.target.value=''; };
+      if (upInp)      upInp.onchange      = function(e){ handleFile(e.target.files && e.target.files[0]); e.target.value=''; };
+      if (camMoreInp) camMoreInp.onchange = function(e){ handleFile(e.target.files && e.target.files[0]); e.target.value=''; };
+      if (moreInp)    moreInp.onchange    = function(e){
+        var files = [ ...(e.target.files||[]) ];
+        files.forEach(handleFile);
+        e.target.value='';
       };
-      r.readAsDataURL(file);
-    });
-  }
-
-  // Buttons → inputs
-  if (btnCam && camInp) btnCam.onclick = function(){ camInp.click(); };
-  if (btnUp  && upInp)  btnUp.onclick  = function(){ upInp.click(); };
-  if (btnMore && moreInp) btnMore.onclick = function(){ moreInp.click(); };
-  if (btnMoreCam && camMoreInp) btnMoreCam.onclick = function(){ camMoreInp.click(); };
-
-  // Clear all photos
-  if (btnClear){
-    btnClear.onclick = function(){
-      if (mainEl){ mainEl.style.backgroundImage=''; if (mainEl.dataset) delete mainEl.dataset.dataUrl; }
-      if (thumbsWrap) thumbsWrap.innerHTML='';
-      if (camInp) camInp.value='';
-      if (upInp) upInp.value='';
-      if (moreInp) moreInp.value='';
-      if (camMoreInp) camMoreInp.value='';
-    };
-  }
-
-  // Inputs → files (all go through the same handler; auto place main-or-append)
-  if (camInp) camInp.onchange = function(e){ handleFile(e.target.files && e.target.files[0]); e.target.value=''; };
-  if (upInp)  upInp.onchange  = function(e){ handleFile(e.target.files && e.target.files[0]); e.target.value=''; };
-  if (camMoreInp) camMoreInp.onchange = function(e){ handleFile(e.target.files && e.target.files[0]); e.target.value=''; };
-  if (moreInp) moreInp.onchange = function(e){
-    var files = [ ...(e.target.files || []) ];
-    files.forEach(function(f){ handleFile(f); });
-    e.target.value='';
-  };
-}
-bindUploadButtons();
-
+    
+      if (btnClear){
+        btnClear.onclick = function(){
+          holder.innerHTML = '';
+          if (camInp) camInp.value='';
+          if (upInp) upInp.value='';
+          if (moreInp) moreInp.value='';
+          if (camMoreInp) camMoreInp.value='';
+        };
+      }
+    }
+    bindUploadButtons();
 
     function openForm(dateKey) {
       $('#screen-home').classList.remove('active');
@@ -886,5 +855,6 @@ bindUploadButtons();
   </script>
 </body>
 </html>
+
 
 
