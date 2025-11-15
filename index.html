@@ -512,68 +512,96 @@ input, select, textarea {
       });
     }
 
-    // Simple photo handlers (data URL approach)
-    function bindUploadButtons(){
-      var btnCam = document.getElementById('btnCamera');
-      var btnUp  = document.getElementById('btnUpload');
-      var btnMore= document.getElementById('btnAddMore');
-      var btnMoreCam = document.getElementById('btnAddMoreCam');
-      var btnClear = document.getElementById('btnClearPhotos');
-      var camInp = document.getElementById('camCapture');
-      var camMoreInp = document.getElementById('camCaptureMore');
-      var upInp  = document.getElementById('fileUpload');
-      var moreInp= document.getElementById('fileUploadMore');
+// Simple photo handlers (data URL approach)
+function bindUploadButtons(){
+  var btnCam = document.getElementById('btnCamera');
+  var btnUp  = document.getElementById('btnUpload');
+  var btnMore= document.getElementById('btnAddMore');
+  var btnMoreCam = document.getElementById('btnAddMoreCam');
+  var btnClear = document.getElementById('btnClearPhotos');
 
-      function addThumb(dataUrl){
-        var th=document.createElement('div'); th.className='thumb small'; th.style.backgroundImage='url('+dataUrl+')'; th.dataset.dataUrl=dataUrl;
-        document.getElementById('thumbs').appendChild(th);
-      }
-      function handleFile(file, toMain){
-        if(!file) return;
-        // Compress before showing/saving to keep storage low
-        compressImage(file, 1280, 0.72).then(function(dataUrl){
-          if(toMain){
-            var th=document.getElementById('thumb');
-            th.style.backgroundImage='url('+dataUrl+')';
-            th.dataset.dataUrl=dataUrl;
-          } else {
-            addThumb(dataUrl);
-          }
-        }).catch(function(){
-          // Fallback: raw file
-          var r=new FileReader();
-          r.onload=function(){
-            var dataUrl=r.result;
-            if(toMain){
-              var th=document.getElementById('thumb');
-              th.style.backgroundImage='url('+dataUrl+')';
-              th.dataset.dataUrl=dataUrl;
-            } else {
-              addThumb(dataUrl);
-            }
-          };
-          r.readAsDataURL(file);
-        });
-      }
+  var camInp = document.getElementById('camCapture');
+  var camMoreInp = document.getElementById('camCaptureMore');
+  var upInp  = document.getElementById('fileUpload');
+  var moreInp= document.getElementById('fileUploadMore');
 
-      if (btnCam && camInp) btnCam.onclick=function(){ camInp.click(); };
-      if (btnUp  && upInp)  btnUp.onclick=function(){ upInp.click(); };
-      if (btnMore){ btnMore.onclick=function(){ if (moreInp) moreInp.click(); }; }
-      if (btnMoreCam){ btnMoreCam.onclick=function(){ if (camMoreInp) camMoreInp.click(); }; }
-      if (btnClear){
-        btnClear.onclick=function(){
-          var main=document.getElementById('thumb');
-          if (main){ main.style.backgroundImage=''; if (main.dataset) delete main.dataset.dataUrl; }
-          var ts=document.getElementById('thumbs'); if (ts) ts.innerHTML='';
-          if (camInp) camInp.value=''; if (upInp) upInp.value=''; if (moreInp) moreInp.value='';
-        };
-      }
-      if (camInp) camInp.onchange=function(e){ handleFile(e.target.files && e.target.files[0], true); };
-      if (camMoreInp) camMoreInp.onchange=function(e){ handleFile(e.target.files && e.target.files[0], false); };
-      if (upInp)  upInp.onchange=function(e){ handleFile(e.target.files && e.target.files[0], true); };
-      if (moreInp) moreInp.onchange=function(e){ var files=[...(e.target.files||[])]; files.forEach(function(f){handleFile(f,false);}); e.target.value=''; };
-    }
-    bindUploadButtons();
+  var mainEl = document.getElementById('thumb');
+  var thumbsWrap = document.getElementById('thumbs');
+
+  function hasMain(){
+    return !!(mainEl && mainEl.dataset && mainEl.dataset.dataUrl);
+  }
+  function setMain(dataUrl){
+    if (!mainEl) return;
+    mainEl.style.backgroundImage = 'url('+dataUrl+')';
+    mainEl.dataset.dataUrl = dataUrl;
+  }
+  function addThumb(dataUrl){
+    var th = document.createElement('div');
+    th.className = 'thumb small';
+    th.style.backgroundImage = 'url('+dataUrl+')';
+    th.dataset.dataUrl = dataUrl;
+    thumbsWrap.appendChild(th);
+  }
+
+  // Promote any small thumb to "main" when tapped (optional QoL)
+  if (thumbsWrap){
+    thumbsWrap.addEventListener('click', function(e){
+      var el = e.target.closest('.thumb.small');
+      if (!el) return;
+      if (!el.dataset || !el.dataset.dataUrl) return;
+      setMain(el.dataset.dataUrl);
+    });
+  }
+
+  // Core handler: first image fills the big slot; all others append
+  function handleFile(file){
+    if(!file) return;
+    compressImage(file, 1280, 0.72).then(function(dataUrl){
+      if (!hasMain()) setMain(dataUrl);
+      else addThumb(dataUrl);
+    }).catch(function(){
+      // Fallback: raw file
+      var r = new FileReader();
+      r.onload = function(){
+        var dataUrl = r.result;
+        if (!hasMain()) setMain(dataUrl);
+        else addThumb(dataUrl);
+      };
+      r.readAsDataURL(file);
+    });
+  }
+
+  // Buttons → inputs
+  if (btnCam && camInp) btnCam.onclick = function(){ camInp.click(); };
+  if (btnUp  && upInp)  btnUp.onclick  = function(){ upInp.click(); };
+  if (btnMore && moreInp) btnMore.onclick = function(){ moreInp.click(); };
+  if (btnMoreCam && camMoreInp) btnMoreCam.onclick = function(){ camMoreInp.click(); };
+
+  // Clear all photos
+  if (btnClear){
+    btnClear.onclick = function(){
+      if (mainEl){ mainEl.style.backgroundImage=''; if (mainEl.dataset) delete mainEl.dataset.dataUrl; }
+      if (thumbsWrap) thumbsWrap.innerHTML='';
+      if (camInp) camInp.value='';
+      if (upInp) upInp.value='';
+      if (moreInp) moreInp.value='';
+      if (camMoreInp) camMoreInp.value='';
+    };
+  }
+
+  // Inputs → files (all go through the same handler; auto place main-or-append)
+  if (camInp) camInp.onchange = function(e){ handleFile(e.target.files && e.target.files[0]); e.target.value=''; };
+  if (upInp)  upInp.onchange  = function(e){ handleFile(e.target.files && e.target.files[0]); e.target.value=''; };
+  if (camMoreInp) camMoreInp.onchange = function(e){ handleFile(e.target.files && e.target.files[0]); e.target.value=''; };
+  if (moreInp) moreInp.onchange = function(e){
+    var files = [ ...(e.target.files || []) ];
+    files.forEach(function(f){ handleFile(f); });
+    e.target.value='';
+  };
+}
+bindUploadButtons();
+
 
     function openForm(dateKey) {
       $('#screen-home').classList.remove('active');
@@ -858,4 +886,5 @@ input, select, textarea {
   </script>
 </body>
 </html>
+
 
