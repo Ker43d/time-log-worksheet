@@ -169,13 +169,11 @@ html,body{ width:100%; overflow-x:hidden; }
 
 /* PHONE-SAFE DATE INPUT — single source of truth */
 input[type="date"]{
-  position: relative;
-  display: block;
+  appearance: auto;
+  -webkit-appearance: auto;
   width: 100%;
-  max-width: 100%;
-  min-width: 0;
   box-sizing: border-box;
-  padding: 10px 44px 10px 12px;  /* reserve space for the icon */
+  padding: 10px 3.8em 10px 12px;   /* space for the picker button */
   border-radius: 10px;
   border: 1px solid #d1d5db;
   background: #fff;
@@ -183,30 +181,34 @@ input[type="date"]{
   box-shadow: 0 1px 0 #fff inset;
 }
 
-/* Let the date text use all remaining space */
+/* Let the text use all remaining width (prevents clipping) */
 input[type="date"]::-webkit-datetime-edit,
 input[type="date"]::-webkit-datetime-edit-fields-wrapper{
   min-width: 0;
   padding-right: 0;
+  overflow: hidden;
+  text-overflow: clip;
 }
 
-/* Place the mini calendar at the far right */
+/* Keep native button, but don’t position it over the text */
 input[type="date"]::-webkit-calendar-picker-indicator{
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 18px;
-  height: 18px;
-  margin: 0;
-  padding: 0;
   opacity: 1;
   cursor: pointer;
+  width: 1.6em;
+  height: 1.6em;
+  margin: 0;               /* no extra margin that pushes text */
+  padding: 0;
+  background: none;        /* use the platform icon */
 }
 
 /* Ensure the two-column row can shrink on narrow phones */
 .row-2 { grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 10px; }
 .row-2 > label { min-width: 0; }
+
+/* Some Android/Samsung builds need a bit more right padding */
+@supports (-webkit-touch-callout: none) {
+  input[type="date"]{ padding-right: 4.4em; }   /* bump to 4.8em if a digit still clips */
+}
 
 @media (max-width: 420px){
   input[type="date"]{ padding-right: 52px; }  /* bump to 52px if a digit still clips */
@@ -829,6 +831,7 @@ if("serviceWorker" in navigator){ navigator.serviceWorker.register("service-work
 </script>
 </body>
 </html>
+
 
 
 
