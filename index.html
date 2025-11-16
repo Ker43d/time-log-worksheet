@@ -167,56 +167,48 @@ html,body{ width:100%; overflow-x:hidden; }
 .gallery{ display:grid; gap:10px; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); align-items:start; margin:8px 16px 0; }
 .gallery img{ width:100%; height:auto; border-radius:8px; box-shadow:0 4px 12px #0002; display:block; }
 
-/* Lock date boxes inside the grid on Android */
-.row-2 { grid-template-columns: minmax(0,1fr) minmax(0,1fr); } /* allow shrink */
-.row-2 label { min-width: 0; }                                /* no overflow from labels */
-
-.row-2 input[type="date"]{
-  display:block;
-  width:100%;
-  max-width:100%;
-  min-width:0;
-  overflow: clip;                 /* clip the internal control so it can't spill out */
-}
-
-/* Slightly smaller indicator + no extra margins */
-input[type="date"]{ padding-right:32px; }  /* was 40px */
-input[type="date"]::-webkit-calendar-picker-indicator{
-  width:1.2em;
-  height:1.2em;
-  margin:0;              /* prevent the glyph from pushing outside */
-  padding:0;
-}
-
-/* Keep date text clear of the picker on Android/Chrome */
-.row-2 { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }  /* allow shrink */
-.row-2 label { min-width: 0; }
-
+/* Compact, phone-safe date inputs (keeps text clear of the picker) */
 input[type="date"]{
-  display:block;
-  width:100%;
-  max-width:100%;
-  min-width:0;
-  padding-right:48px;           /* reserve space for the picker button */
-  box-sizing:border-box;
-  overflow:clip;                /* prevent any right-side spill */
+  appearance: auto;
+  -webkit-appearance: auto;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  font-size: 15px;           /* slightly smaller so 11/16/2025 fits */
+  padding: 10px 34px 10px 12px; /* reserve 34px on the right for the picker */
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  box-sizing: border-box;
 }
 
-/* Slightly smaller/tighter picker so it doesn't eat text */
+/* Let the editable part shrink instead of forcing a wide year */
+input[type="date"]::-webkit-datetime-edit,
+input[type="date"]::-webkit-datetime-edit-fields-wrapper{
+  min-width: 0;
+  padding-right: 0;
+  letter-spacing: 0;
+}
+
+/* Smaller picker button so it doesn’t eat the last digits */
 input[type="date"]::-webkit-calendar-picker-indicator{
-  width:1.1em;
-  height:1.1em;
-  margin:0;
-  padding:0;
+  width: 1em;
+  height: 1em;
+  margin: 0;
+  padding: 0;
+  opacity: 1;
+  cursor: pointer;
 }
 
-/* Nudge the editable date area left a bit (WebKit/Blink) */
-input[type="date"]::-webkit-datetime-edit{
-  padding-right:6px;
-}
+/* Allow the two-column row to actually shrink on tiny screens */
+.row-2 { grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 10px; }
+.row-2 > label { min-width: 0; }
 
-/* Optional: if your phone shows spin arrows, hide them */
-input[type="date"]::-webkit-inner-spin-button{ display:none; }
+/* If your phone still clips, bump this to 38–40px */
+@media (max-width: 420px){
+  input[type="date"]{ padding-right: 36px; }
+}
 
 </style>
 </head>
@@ -835,6 +827,7 @@ if("serviceWorker" in navigator){ navigator.serviceWorker.register("service-work
 </script>
 </body>
 </html>
+
 
 
 
