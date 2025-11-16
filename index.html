@@ -163,14 +163,14 @@
     }
 
     /* Prevent mobile auto-zoom when focusing inputs */
-    input, select, textarea {
-      font-size: 16px !important;   /* 16+ px avoids iOS/Android focus zoom */
-    }
+  input, select, textarea {
+    font-size: 16px !important;   /* 16+ px avoids iOS/Android focus zoom */
+  }
 
-    /* iOS-specific guard (optional) */
-    @supports (-webkit-touch-callout: none) {
-      input, select, textarea { font-size: 16px !important; }
-    }
+  /* iOS-specific guard (optional) */
+  @supports (-webkit-touch-callout: none) {
+    input, select, textarea { font-size: 16px !important; }
+  }
 
   </style>
 </head>
