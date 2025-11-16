@@ -574,7 +574,31 @@ function bindUploadButtons(){
     return list;
   };
   const openMain=()=>{ try{ if(typeof openLightbox==='function') openLightbox(0,buildList()); }catch(_){} };
-  const setMain=(dataUrl)=>{ if(!mainEl) return; mainEl.style.backgroundImage='url('+dataUrl+')'; mainEl.dataset.dataUrl=dataUrl; mainEl.style.cursor='zoom-in'; mainEl.onclick=openMain; };
+const setMain = (dataUrl) => {
+  if (!mainEl) return;
+
+  // If a main image already exists, move it to the grid (newest goes first)
+  const prev = (mainEl.dataset && mainEl.dataset.dataUrl) ? mainEl.dataset.dataUrl : null;
+  if (prev) {
+    const th = document.createElement('div');
+    th.className = 'thumb small';
+    th.style.backgroundImage = 'url(' + prev + ')';
+    th.dataset.dataUrl = prev;
+    th.style.cursor = 'zoom-in';
+    th.addEventListener('click', () => {
+      const list = buildList();
+      const idx = list.indexOf(prev);
+      try { if (typeof openLightbox === 'function') openLightbox(idx < 0 ? 0 : idx, list); } catch (_) {}
+    });
+    thumbsWrap.insertBefore(th, thumbsWrap.firstChild); // put it at the front
+  }
+
+  // Set the new main
+  mainEl.style.backgroundImage = 'url(' + dataUrl + ')';
+  mainEl.dataset.dataUrl = dataUrl;
+  mainEl.style.cursor = 'zoom-in';
+  mainEl.onclick = openMain;
+};
   const addThumb=(dataUrl)=>{
     const th=document.createElement('div'); th.className='thumb small'; th.style.backgroundImage='url('+dataUrl+')'; th.dataset.dataUrl=dataUrl; th.style.cursor='zoom-in';
     th.addEventListener('click',()=>{ const list=buildList(); const idx=list.indexOf(dataUrl); try{ if(typeof openLightbox==='function') openLightbox(idx<0?0:idx,list); }catch(_){} });
@@ -583,9 +607,10 @@ function bindUploadButtons(){
   const handleFile=(file)=>{
     if(!file) return;
     compressImage(file,1280,.72).then(dataUrl=>{
-      if(!mainEl.dataset || !mainEl.dataset.dataUrl) setMain(dataUrl); else addThumb(dataUrl);
+      setMain(dataUrl);
     }).catch(()=>{
-      const r=new FileReader(); r.onload=()=>{ const dataUrl=r.result; if(!mainEl.dataset || !mainEl.dataset.dataUrl) setMain(dataUrl); else addThumb(dataUrl); }; r.readAsDataURL(file);
+      const r=new FileReader(); r.onload=()=>{const dataUrl = r.result;
+setMain(dataUrl); }; r.readAsDataURL(file);
     });
   };
 
@@ -725,7 +750,7 @@ function openActivity(dateKey){
     : `<div>Enter a pay range to see gross totals.</div>`;
 
   const thumbBox=$('#thumbBox'); thumbBox.innerHTML='';
-  const photos = Array.isArray(rec.photos) ? rec.photos.slice(0).reverse() : [];
+  const photos = Array.isArray(rec.photos) ? rec.photos.slice(0) : [];
   photos.forEach((src,i)=>{
     const wrap=document.createElement('div');
     const img=document.createElement('img'); img.src=src; img.alt='Saved photo'; img.style.cursor='zoom-in';
@@ -831,6 +856,7 @@ if("serviceWorker" in navigator){ navigator.serviceWorker.register("service-work
 </script>
 </body>
 </html>
+
 
 
 
