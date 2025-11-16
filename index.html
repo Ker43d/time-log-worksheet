@@ -107,7 +107,7 @@ input[type="number"], input[type="text"], .textlike {
   box-shadow: 0 1px 0 #fff inset;
 }
 
-/* Date inputs – restore native picker + icon */
+/* Date inputs – show a calendar icon and keep native picker button */
 input[type="date"]{
   appearance: auto;
   -webkit-appearance: auto;
@@ -118,13 +118,24 @@ input[type="date"]{
   background: #fff;
   font-size: 16px;
   box-shadow: 0 1px 0 #fff inset;
-  padding-right: 36px;     /* space for the calendar icon */
+  padding-right: 40px;   /* room for the icon button */
 }
-/* Ensure the calendar icon shows & is tappable on WebKit (Chrome/Safari) */
+
+/* Chrome/Safari/Edge (WebKit/Blink): replace ▼ with a calendar glyph */
 input[type="date"]::-webkit-calendar-picker-indicator{
   opacity: 1;
-  display: block;
   cursor: pointer;
+  width: 1.4em;
+  height: 1.4em;
+  background: no-repeat center / 1.2em
+    url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236b7280'>\
+<rect x='3' y='4' width='18' height='18' rx='3' ry='3'/>\
+<rect x='3' y='8' width='18' height='4' fill='%23ffffff'/>\
+<rect x='6' y='2' width='2' height='4' fill='%236b7280'/>\
+<rect x='16' y='2' width='2' height='4' fill='%236b7280'/>\
+<rect x='6' y='13' width='3' height='3' fill='%23ffffff'/>\
+</svg>");
 }
 
     input:focus { outline: 2px solid var(--accent2); border-color: transparent; }
@@ -1061,6 +1072,7 @@ bindUploadButtons();
   </script>
 </body>
 </html>
+
 
 
 
