@@ -207,7 +207,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{
 
 /* Some Android/Samsung builds need a bit more right padding */
 @supports (-webkit-touch-callout: none) {
-  input[type="date"]{ padding-right: 0.2em; }   /* bump to 4.8em if a digit still clips */
+  input[type="date"]{ padding-right: 5.0em; }   /* bump to 4.8em if a digit still clips */
 }
 
 </style>
@@ -827,6 +827,7 @@ if("serviceWorker" in navigator){ navigator.serviceWorker.register("service-work
 </script>
 </body>
 </html>
+
 
 
 
