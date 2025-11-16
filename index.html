@@ -293,14 +293,10 @@ input[type="date"]::-webkit-calendar-picker-indicator{
           <div class="camrow">
             <button class="iconbtn" id="btnCamera" type="button">📷 Camera</button>
             <button class="iconbtn" id="btnUpload" type="button">⬆️ Upload</button>
-            <button class="iconbtn" id="btnAddMore" type="button">＋ Add Photo</button>
-            <button class="iconbtn" id="btnAddMoreCam" type="button">＋ Camera</button>
             <button class="iconbtn" id="btnClearPhotos" type="button" title="Remove all selected photos">🗑️ Clear Photos</button>
           </div>
           <input type="file" accept="image/*" capture="environment" id="camCapture" hidden />
           <input type="file" accept="image/*" id="fileUpload" hidden />
-          <input type="file" accept="image/*" id="fileUploadMore" hidden multiple />
-          <input type="file" accept="image/*" capture="environment" id="camCaptureMore" hidden />
           <div class="thumb" id="thumb"></div>
           <div class="thumbs" id="thumbs"></div>
         </div>
@@ -564,73 +560,79 @@ function compressImage(file,maxDim=1280,quality=.72){
   });
 }
 function bindUploadButtons(){
-  const btnCam=$('#btnCamera'), btnUp=$('#btnUpload'), btnMore=$('#btnAddMore'), btnMoreCam=$('#btnAddMoreCam'), btnClear=$('#btnClearPhotos');
-  const camInp=$('#camCapture'), camMoreInp=$('#camCaptureMore'), upInp=$('#fileUpload'), moreInp=$('#fileUploadMore');
-  const mainEl=$('#thumb'), thumbsWrap=$('#thumbs');
+  const btnCam = document.getElementById('btnCamera');
+  const btnUp  = document.getElementById('btnUpload');
+  const btnClear = document.getElementById('btnClearPhotos');
 
-  const buildList=()=>{
-    const list=[]; if(mainEl && mainEl.dataset && mainEl.dataset.dataUrl) list.push(mainEl.dataset.dataUrl);
-    $$('#thumbs .thumb').forEach(e=>{ if(e.dataset && e.dataset.dataUrl) list.push(e.dataset.dataUrl); });
+  const camInp = document.getElementById('camCapture');
+  const upInp  = document.getElementById('fileUpload');
+
+  const mainEl = document.getElementById('thumb');
+  const thumbsWrap = document.getElementById('thumbs');
+
+  const buildList = () => {
+    const list = [];
+    if (mainEl && mainEl.dataset && mainEl.dataset.dataUrl) list.push(mainEl.dataset.dataUrl);
+    document.querySelectorAll('#thumbs .thumb').forEach(e => {
+      if (e.dataset && e.dataset.dataUrl) list.push(e.dataset.dataUrl);
+    });
     return list;
   };
-  const openMain=()=>{ try{ if(typeof openLightbox==='function') openLightbox(0,buildList()); }catch(_){} };
-const setMain = (dataUrl) => {
-  if (!mainEl) return;
-
-  // If a main image already exists, move it to the grid (newest goes first)
-  const prev = (mainEl.dataset && mainEl.dataset.dataUrl) ? mainEl.dataset.dataUrl : null;
-  if (prev) {
-    const th = document.createElement('div');
-    th.className = 'thumb small';
-    th.style.backgroundImage = 'url(' + prev + ')';
-    th.dataset.dataUrl = prev;
-    th.style.cursor = 'zoom-in';
-    th.addEventListener('click', () => {
-      const list = buildList();
-      const idx = list.indexOf(prev);
-      try { if (typeof openLightbox === 'function') openLightbox(idx < 0 ? 0 : idx, list); } catch (_) {}
-    });
-    thumbsWrap.insertBefore(th, thumbsWrap.firstChild); // put it at the front
-  }
-
-  // Set the new main
-  mainEl.style.backgroundImage = 'url(' + dataUrl + ')';
-  mainEl.dataset.dataUrl = dataUrl;
-  mainEl.style.cursor = 'zoom-in';
-  mainEl.onclick = openMain;
-};
-  const addThumb=(dataUrl)=>{
-    const th=document.createElement('div'); th.className='thumb small'; th.style.backgroundImage='url('+dataUrl+')'; th.dataset.dataUrl=dataUrl; th.style.cursor='zoom-in';
-    th.addEventListener('click',()=>{ const list=buildList(); const idx=list.indexOf(dataUrl); try{ if(typeof openLightbox==='function') openLightbox(idx<0?0:idx,list); }catch(_){} });
-    thumbsWrap.insertBefore(th, thumbsWrap.firstChild);   // newest → left/top
+  const openMain = () => {
+    try { if (typeof openLightbox === 'function') openLightbox(0, buildList()); } catch(_) {}
   };
-  const handleFile=(file)=>{
-    if(!file) return;
-    compressImage(file,1280,.72).then(dataUrl=>{
-      setMain(dataUrl);
-    }).catch(()=>{
-      const r=new FileReader(); r.onload=()=>{const dataUrl = r.result;
-setMain(dataUrl); }; r.readAsDataURL(file);
+
+  const setMain = (dataUrl) => {
+    if (!mainEl) return;
+    const prev = (mainEl.dataset && mainEl.dataset.dataUrl) ? mainEl.dataset.dataUrl : null;
+    if (prev) {
+      const th = document.createElement('div');
+      th.className = 'thumb small';
+      th.style.backgroundImage = 'url('+prev+')';
+      th.dataset.dataUrl = prev;
+      th.style.cursor = 'zoom-in';
+      th.addEventListener('click', () => {
+        const list = buildList();
+        const idx = list.indexOf(prev);
+        try { if (typeof openLightbox === 'function') openLightbox(idx < 0 ? 0 : idx, list); } catch(_) {}
+      });
+      if (thumbsWrap) thumbsWrap.insertBefore(th, thumbsWrap.firstChild); // newest first
+    }
+    mainEl.style.backgroundImage = 'url('+dataUrl+')';
+    mainEl.dataset.dataUrl = dataUrl;
+    mainEl.style.cursor = 'zoom-in';
+    mainEl.onclick = openMain;
+  };
+
+  const handleFile = (file) => {
+    if (!file) return;
+    compressImage(file, 1280, 0.72).then(setMain).catch(() => {
+      const r = new FileReader();
+      r.onload = () => setMain(r.result);
+      r.readAsDataURL(file);
     });
   };
 
-  if(btnCam && camInp) btnCam.onclick=()=>camInp.click();
-  if(btnUp  && upInp ) btnUp.onclick =()=>upInp.click();
-  if(btnMore && moreInp) btnMore.onclick=()=>moreInp.click();
-  if(btnMoreCam && camMoreInp) btnMoreCam.onclick=()=>camMoreInp.click();
+  if (btnCam && camInp) btnCam.onclick = () => camInp.click();
+  if (btnUp  && upInp ) btnUp.onclick  = () => upInp.click();
 
-  if(btnClear){
-    btnClear.onclick=()=>{
-      if(mainEl){ mainEl.style.backgroundImage=''; if(mainEl.dataset) delete mainEl.dataset.dataUrl; mainEl.onclick=null; mainEl.style.cursor='default'; }
-      if(thumbsWrap) thumbsWrap.innerHTML='';
-      if(camInp) camInp.value=''; if(upInp) upInp.value=''; if(moreInp) moreInp.value=''; if(camMoreInp) camMoreInp.value='';
+  if (btnClear){
+    btnClear.onclick = () => {
+      if (mainEl){ mainEl.style.backgroundImage=''; if (mainEl.dataset) delete mainEl.dataset.dataUrl; mainEl.onclick=null; mainEl.style.cursor='default'; }
+      if (thumbsWrap) thumbsWrap.innerHTML='';
+      if (camInp) camInp.value=''; if (upInp) upInp.value='';
     };
   }
 
-  if(camInp) camInp.onchange=e=>{ handleFile(e.target.files && e.target.files[0]); e.target.value=''; };
-  if(upInp)  upInp.onchange =e=>{ handleFile(e.target.files && e.target.files[0]); e.target.value=''; };
-  if(camMoreInp) camMoreInp.onchange=e=>{ handleFile(e.target.files && e.target.files[0]); e.target.value=''; };
-  if(moreInp) moreInp.onchange=e=>{ [...(e.target.files||[])].forEach(f=>handleFile(f)); e.target.value=''; };
+  // upload handlers (support multi-select if you add `multiple` to #fileUpload)
+  if (camInp) camInp.onchange = (e) => { handleFile(e.target.files && e.target.files[0]); e.target.value=''; };
+  if (upInp)  upInp.onchange  = (e) => {
+    const files = [...(e.target.files || [])];
+    if (!files.length) return;
+    // If multiple selected, each becomes the new main in selection order
+    files.forEach(f => handleFile(f));
+    e.target.value='';
+  };
 }
 bindUploadButtons();
 
@@ -856,6 +858,7 @@ if("serviceWorker" in navigator){ navigator.serviceWorker.register("service-work
 </script>
 </body>
 </html>
+
 
 
 
