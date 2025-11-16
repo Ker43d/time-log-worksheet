@@ -172,20 +172,27 @@
       input, select, textarea { font-size: 16px !important; }
     }
 
-    /* --- Fix: right-edge cut on the form page (narrow webviews) --- */
+/* --- FIX: narrow webviews (Messenger) cutting the right edge on the Form --- */
+html, body { width: 100%; overflow-x: hidden; }
+
 .app{
   width: 100%;
   max-width: 420px;
-  margin: 0 auto;           /* hard center */
+  margin: 0 auto;
 }
-
-html, body { overflow-x: hidden; } /* prevent any horizontal push */
 
 #screen-form .form{
-  padding-left: 16px;       /* keep content inside the edge */
-  padding-right: 16px;
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
   max-width: 100%;
 }
+
+.form, .row, .row-2, .camrow { min-width: 0; }
+.row, .row-2 { width: 100%; }
+.camrow { flex-wrap: wrap; gap: 10px; }
+
+/* ensure grid children can shrink inside small webviews */
+.row > *, .row-2 > * { min-width: 0; }
 
   </style>
 </head>
@@ -295,7 +302,6 @@ html, body { overflow-x: hidden; } /* prevent any horizontal push */
     <!-- Screen 3: Results / Activity -->
     <section class="screen" id="screen-activity">
       <div class="cal-wrap" style="padding-bottom:0">
-        <!-- Reuse header mini calendar visual -->
         <div class="calendar3d" aria-hidden="true">
           <div class="page-shadow" style="height: 200px"></div>
           <div class="pad">
@@ -1003,5 +1009,6 @@ bindUploadButtons();
   </script>
 </body>
 </html>
+
 
 
