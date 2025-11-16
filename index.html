@@ -26,28 +26,21 @@
 <meta name="twitter:image" content="https://ker43d.github.io/time-log-worksheet/app-icon-512.png" />
 
   <style>
-    :root {
-      --bg: #f5f6f8;
-      --ink: #0b1220;
-      --muted: #6b7280;
-      --red: #e21d2f;
-      --red-dark: #c01827;
-      --accent: #133a80; /* dark blue */
-      --accent2: #1f6be0; /* bright blue (today square) */
-      --surface: #ffffff;
-      --shadow: #d5d7dc;
-      --ring: #1b2333;
-      --green: #16a34a;
-      --blue: #0ea5e9;
-      /* Share card modal (reuses your overlay look) */
-.share-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; z-index:9998; }
-.share-overlay.show{ display:flex; }
-.share-card{ width:min(380px,92vw); background:#fff; border-radius:16px; padding:18px; box-shadow:0 14px 40px #0006; }
-.share-title{ font-weight:900; font-size:18px; margin:0 0 6px; }
-.share-sub{ color:#6b7280; font-size:13px; margin-bottom:12px; }
-.share-qr{ display:grid; place-items:center; margin:12px 0; }
-.share-actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:10px; }
-.linkbox{ display:flex; gap:8px; align-items:center; background:#f8fafc; border:1px solid #e5e7eb; padding:8px 10px; border-radius:10px; font-size:12px; overflow:auto; }
+:root {
+  --bg: #f5f6f8;
+  --ink: #0b1220;
+  --muted: #6b7280;
+  --red: #e21d2f;
+  --red-dark: #c01827;
+  --accent: #133a80; /* dark blue */
+  --accent2: #1f6be0; /* bright blue (today square) */
+  --surface: #ffffff;
+  --shadow: #d5d7dc;
+  --ring: #1b2333;
+  --green: #16a34a;
+  --blue: #0ea5e9;
+}
+
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html, body { height: 100%; }
@@ -170,6 +163,16 @@ input[type="date"]::-webkit-calendar-picker-indicator{
     .gallery { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); align-items: start; margin: 8px 16px 0; }
     .gallery img { width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 12px #0002; display: block; }
 
+          /* Share card modal (reuses your overlay look) */
+    .share-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; z-index:9998; }
+    .share-overlay.show{ display:flex; }
+    .share-card{ width:min(380px,92vw); background:#fff; border-radius:16px; padding:18px; box-shadow:0 14px 40px #0006; }
+    .share-title{ font-weight:900; font-size:18px; margin:0 0 6px; }
+    .share-sub{ color:#6b7280; font-size:13px; margin-bottom:12px; }
+    .share-qr{ display:grid; place-items:center; margin:12px 0; }
+    .share-actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:10px; }
+    .linkbox{ display:flex; gap:8px; align-items:center; background:#f8fafc; border:1px solid #e5e7eb; padding:8px 10px; border-radius:10px; font-size:12px; overflow:auto; }
+        
     /* =================== Button Animations (buttons only) =================== */
     :where(button, .btn, .iconbtn, .closebtn, .lb-btn, .month button, .fab){
       transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease, background-color 160ms ease;
@@ -1067,6 +1070,7 @@ bindUploadButtons();
   </script>
 </body>
 </html>
+
 
 
 
