@@ -92,13 +92,14 @@
     label { font-size: 14px; color: var(--ink); font-weight: 600; display: grid; gap: 6px; }
     .row { display: grid; grid-template-columns: 1fr 120px; gap: 10px; align-items: end; }
 
-    /* Common inputs (exclude date so native picker stays visible) */
-    input[type="number"], input[type="text"], .textlike{
-      appearance: none; -moz-appearance: textfield;
-      width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #d1d5db; background: #fff; font-size: 16px;
-      box-shadow: 0 1px 0 #fff inset;
-    }
-    /* Date inputs – keep native picker + show a calendar icon everywhere */
+    /* Common inputs (exclude date) */
+input[type="number"], input[type="text"], .textlike{
+  appearance: none; -moz-appearance: textfield;
+  width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #d1d5db; background: #fff; font-size: 16px;
+  box-shadow: 0 1px 0 #fff inset;
+}
+
+/* Date inputs – keep native picker and icon */
 input[type="date"]{
   appearance: auto;
   -webkit-appearance: auto;
@@ -109,14 +110,11 @@ input[type="date"]{
   background: #fff;
   font-size: 16px;
   box-shadow: 0 1px 0 #fff inset;
-
-  /* space on the right for icon / tap target */
-  padding-right: 40px;
+  padding-right: 40px; /* space for icon */
 }
-
-/* Desktop/WebKit/Blink: show the native indicator */
 input[type="date"]::-webkit-calendar-picker-indicator{
-  opacity: 1;
+  opacity: 1;        /* visible */
+  display: block;
   cursor: pointer;
 }
 
@@ -176,14 +174,6 @@ input[type="date"]::-webkit-calendar-picker-indicator{
     .gallery { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); align-items: start; margin: 8px 16px 0; }
     .gallery img { width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 12px #0002; display: block; }
 
-    /* Share overlay */
-    .share-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; z-index:9998; }
-    .share-overlay.show{ display:flex; }
-    .share-card{ width:min(380px,92vw); background:#fff; border-radius:16px; padding:18px; box-shadow:0 14px 40px #0006; }
-    .share-title{ font-weight:900; font-size:18px; margin:0 0 6px; }
-    .share-sub{ color:#6b7280; font-size:13px; margin-bottom:12px; }
-    .share-qr{ display:grid; place-items:center; margin:12px 0; }
-    .share-actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:10px; }
     .linkbox{ display:flex; gap:8px; align-items:center; background:#f8fafc; border:1px solid #e5e7eb; padding:8px 10px; border-radius:10px; font-size:12px; overflow:auto; }
 
     /* Buttons animation */
@@ -996,6 +986,7 @@ bindUploadButtons();
   </script>
 </body>
 </html>
+
 
 
 
