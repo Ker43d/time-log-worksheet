@@ -578,7 +578,7 @@ function bindUploadButtons(){
   const addThumb=(dataUrl)=>{
     const th=document.createElement('div'); th.className='thumb small'; th.style.backgroundImage='url('+dataUrl+')'; th.dataset.dataUrl=dataUrl; th.style.cursor='zoom-in';
     th.addEventListener('click',()=>{ const list=buildList(); const idx=list.indexOf(dataUrl); try{ if(typeof openLightbox==='function') openLightbox(idx<0?0:idx,list); }catch(_){} });
-    thumbsWrap.appendChild(th);
+    thumbsWrap.insertBefore(th, thumbsWrap.firstChild);   // newest → left/top
   };
   const handleFile=(file)=>{
     if(!file) return;
@@ -725,7 +725,7 @@ function openActivity(dateKey){
     : `<div>Enter a pay range to see gross totals.</div>`;
 
   const thumbBox=$('#thumbBox'); thumbBox.innerHTML='';
-  const photos=Array.isArray(rec.photos)?rec.photos.slice(0):[];
+  const photos = Array.isArray(rec.photos) ? rec.photos.slice(0).reverse() : [];
   photos.forEach((src,i)=>{
     const wrap=document.createElement('div');
     const img=document.createElement('img'); img.src=src; img.alt='Saved photo'; img.style.cursor='zoom-in';
@@ -831,6 +831,7 @@ if("serviceWorker" in navigator){ navigator.serviceWorker.register("service-work
 </script>
 </body>
 </html>
+
 
 
 
