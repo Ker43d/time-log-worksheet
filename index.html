@@ -941,31 +941,31 @@ bindUploadButtons();
 
     // ===== Lightweight Console Tests =====
 ; (function tests(){
-      try {
-        if (!location.search.includes('tlwtest=1')) return; // run tests only when ?tlwtest=1
-        const original = localStorage.getItem('tlw-data');
-        const sample = {
-          "2025-09-01": { reg: 8, ot: 2, regRate: 20, otRate: 30 },
-          "2025-09-02": { reg: 7.5, ot: 0.5 },
-          "2025-08-31": { reg: 3, ot: 1, regRate: 18 }
-        };
-        localStorage.setItem('tlw-data', JSON.stringify(sample));
-        const testPay = moneyForRange('2025-09-01','2025-09-30',20,30);
-        console.assert(Math.abs(testPay.rPay - ((8*20)+(7.5*20))) < 0.001, 'Regular pay test failed');
-        console.assert(Math.abs(testPay.oPay - ((2*30)+(0.5*30))) < 0.001, 'OT pay test failed');
-        const t = totalsForMonth(2025,8);
-        console.assert(Math.abs(t.reg - (8+7.5)) < 0.001 && Math.abs(t.ot - (2+0.5)) < 0.001, 'Monthly totals test failed');
-        // New: moneyForRange returns null on missing args
-        console.assert(
-          moneyForRange(null,'2025-09-30')===null &&
-          moneyForRange('2025-09-01',null)===null,
-          'moneyForRange null-guard failed'
-        );
+  try {
+    if (!location.search.includes('tlwtest=1')) return; // run tests only when ?tlwtest=1
+    const original = localStorage.getItem('tlw-data');
+    const sample = {
+      "2025-09-01": { reg: 8, ot: 2, regRate: 20, otRate: 30 },
+      "2025-09-02": { reg: 7.5, ot: 0.5 },
+      "2025-08-31": { reg: 3, ot: 1, regRate: 18 }
+    };
+    localStorage.setItem('tlw-data', JSON.stringify(sample));
+    const testPay = moneyForRange('2025-09-01','2025-09-30',20,30);
+    console.assert(Math.abs(testPay.rPay - ((8*20)+(7.5*20))) < 0.001, 'Regular pay test failed');
+    console.assert(Math.abs(testPay.oPay - ((2*30)+(0.5*30))) < 0.001, 'OT pay test failed');
+    const t = totalsForMonth(2025,8);
+    console.assert(Math.abs(t.reg - (8+7.5)) < 0.001 && Math.abs(t.ot - (2+0.5)) < 0.001, 'Monthly totals test failed');
+    // New: moneyForRange returns null on missing args
+    console.assert(
+      moneyForRange(null,'2025-09-30')===null &&
+      moneyForRange('2025-09-01',null)===null,
+      'moneyForRange null-guard failed'
+    );
 
-        if (original!==null) localStorage.setItem('tlw-data', original);
-        else localStorage.removeItem('tlw-data');
-      } catch(err) { console.warn('Self-tests skipped:', err); }
-    })();
+    if (original!==null) localStorage.setItem('tlw-data', original);
+    else localStorage.removeItem('tlw-data');
+  } catch(err) { console.warn('Self-tests skipped:', err); }
+})();
   </script>
 
   <!-- PWA: register service worker -->
@@ -976,3 +976,5 @@ bindUploadButtons();
   </script>
 </body>
 </html>
+
+
