@@ -1,162 +1,176 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-  <title>Time Log Worksheet</title>
-  <style>
-    :root {
-      --bg: #f5f6f8;
-      --ink: #0b1220;
-      --muted: #6b7280;
-      --red: #e21d2f;
-      --red-dark: #c01827;
-      --accent: #133a80; /* dark blue */
-      --accent2: #1f6be0; /* bright blue (today square) */
-      --surface: #ffffff;
-      --shadow: #d5d7dc;
-      --ring: #1b2333;
-      --green: #16a34a;
-      --blue: #0ea5e9;
-    }
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body { height: 100%; }
-    body {
-      margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-      color: var(--ink); background: var(--bg);
-      display: grid; place-items: center;
-    }
-    .app { width: min(420px, 100%); height: 100dvh; background: var(--surface); box-shadow: 0 10px 30px #0001, 0 1px 0 #fff inset; overflow: hidden; }
-    header { padding: 10px 16px; font-weight: 700; text-align: center; border-bottom: 1px solid #e5e7eb; }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Time Log Worksheet</title>
 
-    /* Screens */
-    .screen { display: none; height: calc(100dvh - 46px); overflow-y: auto; overflow-x: hidden; }
-    .screen.active { display: block; }
+<!-- Meta / Icons -->
+<meta name="description" content="Simple timesheet you can install. Log regular & overtime hours, photos, and see pay totals fast." />
+<link rel="icon" href="app-icon-192.png" />
+<link rel="apple-touch-icon" href="app-icon-512.png" />
+<meta name="theme-color" content="#e21d2f" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="LogSheet" />
+<meta property="og:description" content="Simple, installable time log & pay tracker." />
+<meta property="og:url" content="https://ker43d.github.io/time-log-worksheet/" />
+<meta property="og:image" content="https://ker43d.github.io/time-log-worksheet/app-icon-512.png" />
+<meta property="og:image:width" content="512" />
+<meta property="og:image:height" content="512" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="LogSheet" />
+<meta name="twitter:description" content="Simple, installable time log & pay tracker." />
+<meta name="twitter:image" content="https://ker43d.github.io/time-log-worksheet/app-icon-512.png" />
 
-    /* 3D Calendar */
-    .cal-wrap { padding: 16px; }
-    .calendar3d { position: relative; width: 100%; background: transparent; }
-    .page-shadow { position: absolute; inset: 24px 12px auto 12px; height: 260px; background: linear-gradient(135deg, #e5e7eb 20%, #cfd3da 60%); filter: blur(0.3px); clip-path: polygon(0 0, 88% 0, 100% 12%, 100% 100%, 0 100%); border-radius: 12px; }
-    .pad { position: relative; background: #fff; border-radius: 24px; padding-bottom: 16px; box-shadow: 0 10px 0 #cfd3da, 0 22px 24px #0001; }
-    .pad-head { background: var(--red); height: 96px; border-radius: 24px 24px 0 0; position: relative; display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 0 16px; color: #fff; }
-    .binder { position: absolute; top: -18px; left: 24px; right: 24px; display: flex; justify-content: space-between; }
-    .ring { width: 48px; height: 48px; border-radius: 50%; background:
-      radial-gradient(circle at 50% 50%, #dce0e7 12px, #0c2a63 12px 18px, #e3e6ed 18px);
-      box-shadow: 6px 8px 0 #0002 inset; }
-    .month { font-weight: 900; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; }
-    .month button { background: #fff2; border: 0; width: 26px; height: 26px; border-radius: 6px; color: #fff; font-weight: 900; cursor: pointer; }
-    .year { font-size: 36px; font-weight: 900; padding-right: 6px; }
-
-    .grid { padding: 12px 18px 18px; }
-    .dow, .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; }
-    .dow { color: var(--muted); font-size: 12px; letter-spacing: 0.02em; }
-    .day { position: relative; height: 38px; display: grid; place-items: center; border-radius: 10px; font-weight: 700; color: #1e293b; }
-    .day.muted { color: #94a3b8; font-weight: 600; }
-    .day.today { outline: 1.5px solid var(--accent2); outline-offset: -3px; border-radius: 8px; }
-    .day.sel   { outline: 1px solid #e93b3b;       outline-offset: -3px; border-radius: 10px; }
-    .dot { position: absolute; bottom: 3px; width: 30px; height: 30px; border-radius: 50%; border: 2px solid #ff9800; }
-    .dot.orange{border-color:#ff9800}
-    .dot.green{border-color:#22c55e}
-
-    .cal-footer { border-top: 1px solid #eef0f3; padding: 12px 16px 16px; }
-    .fab { display: grid; place-items: center; width: 78px; height: 78px; background: radial-gradient(circle at 35% 35%, #ff5252, #d91622); border: 8px solid #ff6b6b44; border-radius: 50%; margin: 18px auto 6px; box-shadow: 0 8px 18px #e11d2e55; cursor: pointer; }
-    .fab::before, .fab::after { content: ""; position: absolute; background: #fff; }
-    .fab::before { width: 34px; height: 10px; border-radius: 4px; }
-    .fab::after { width: 10px; height: 34px; border-radius: 4px; }
-    .hint { text-align: center; color: var(--muted); font-size: 12px; }
-
-    /* Form */
-    .form { padding: 18px; display: grid; gap: 14px; }
-    label { font-size: 14px; color: var(--ink); font-weight: 600; display: grid; gap: 6px; }
-    .row { display: grid; grid-template-columns: 1fr 120px; gap: 10px; align-items: end; }
-    input[type="number"], input[type="text"], .textlike {
-  appearance: none; -moz-appearance: textfield;
-  width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #d1d5db; background: #fff; font-size: 16px;
-  box-shadow: 0 1px 0 #fff inset;
+<style>
+/* -------------------- Theme -------------------- */
+:root{
+  --bg:#f5f6f8; --ink:#0b1220; --muted:#6b7280;
+  --red:#e21d2f; --red-dark:#c01827;
+  --accent:#133a80; --accent2:#1f6be0;
+  --surface:#fff; --shadow:#d5d7dc; --ring:#1b2333;
+  --green:#16a34a; --blue:#0ea5e9;
 }
 
-/* Date inputs — keep native mini calendar */
+/* Base */
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{height:100%}
+body{
+  margin:0; font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
+  color:var(--ink); background:var(--bg); display:grid; place-items:center;
+}
+.app{ width:min(420px,100%); height:100dvh; background:var(--surface); box-shadow:0 10px 30px #0001, 0 1px 0 #fff inset; overflow:hidden; }
+header{ padding:10px 16px; font-weight:700; text-align:center; border-bottom:1px solid #e5e7eb; }
+
+/* Screens */
+.screen{ display:none; height:calc(100dvh - 46px); overflow-y:auto; overflow-x:hidden; }
+.screen.active{ display:block; }
+
+/* 3D Calendar */
+.cal-wrap{ padding:16px; }
+.calendar3d{ position:relative; width:100%; background:transparent; }
+.page-shadow{ position:absolute; inset:24px 12px auto 12px; height:260px; background:linear-gradient(135deg,#e5e7eb 20%,#cfd3da 60%); filter:blur(0.3px); clip-path:polygon(0 0,88% 0,100% 12%,100% 100%,0 100%); border-radius:12px; }
+.pad{ position:relative; background:#fff; border-radius:24px; padding-bottom:16px; box-shadow:0 10px 0 #cfd3da, 0 22px 24px #0001; }
+.pad-head{ background:var(--red); height:96px; border-radius:24px 24px 0 0; position:relative; display:grid; grid-template-columns:1fr auto; align-items:center; padding:0 16px; color:#fff; }
+.binder{ position:absolute; top:-18px; left:24px; right:24px; display:flex; justify-content:space-between; }
+.ring{ width:48px; height:48px; border-radius:50%; background:radial-gradient(circle at 50% 50%, #dce0e7 12px, #0c2a63 12px 18px, #e3e6ed 18px); box-shadow:6px 8px 0 #0002 inset; }
+.month{ font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:10px; }
+.month button{ background:#fff2; border:0; width:26px; height:26px; border-radius:6px; color:#fff; font-weight:900; cursor:pointer; }
+.year{ font-size:36px; font-weight:900; padding-right:6px; }
+.grid{ padding:12px 18px 18px; }
+.dow,.days{ display:grid; grid-template-columns:repeat(7,1fr); gap:8px; text-align:center; }
+.dow{ color:var(--muted); font-size:12px; letter-spacing:.02em; }
+.day{ position:relative; height:38px; display:grid; place-items:center; border-radius:10px; font-weight:700; color:#1e293b; }
+.day.muted{ color:#94a3b8; font-weight:600; }
+.day.today{ outline:1.5px solid var(--accent2); outline-offset:-3px; border-radius:8px; }
+.day.sel{ outline:1px solid #e93b3b; outline-offset:-3px; border-radius:10px; }
+.dot{ position:absolute; bottom:3px; width:30px; height:30px; border-radius:50%; border:2px solid #ff9800; }
+.dot.orange{border-color:#ff9800}
+.dot.green{border-color:#22c55e}
+.cal-footer{ border-top:1px solid #eef0f3; padding:12px 16px 16px; }
+.fab{ display:grid; place-items:center; width:78px; height:78px; background:radial-gradient(circle at 35% 35%, #ff5252, #d91622); border:8px solid #ff6b6b44; border-radius:50%; margin:18px auto 6px; box-shadow:0 8px 18px #e11d2e55; cursor:pointer; }
+.fab::before, .fab::after{ content:""; position:absolute; background:#fff; }
+.fab::before{ width:34px; height:10px; border-radius:4px; }
+.fab::after{ width:10px; height:34px; border-radius:4px; }
+.hint{ text-align:center; color:var(--muted); font-size:12px; }
+
+/* Form */
+.form{ padding:18px; display:grid; gap:14px; }
+label{ font-size:14px; color:var(--ink); font-weight:600; display:grid; gap:6px; }
+.row{ display:grid; grid-template-columns:1fr 120px; gap:10px; align-items:end; }
+
+/* Common inputs (EXCLUDE date so native calendar button survives) */
+input[type="number"], input[type="text"], .textlike{
+  appearance:none; -moz-appearance:textfield;
+  width:100%; padding:10px 12px; border-radius:10px; border:1px solid #d1d5db; background:#fff; font-size:16px;
+  box-shadow:0 1px 0 #fff inset;
+}
+
+/* Date input — keep native picker & show a proper mini calendar */
 input[type="date"]{
-  appearance: auto;
-  -webkit-appearance: auto;
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid #d1d5db;
-  background: #fff;
-  font-size: 16px;
-  box-shadow: 0 1px 0 #fff inset;
-  padding-right: 40px; /* room for the native button */
+  appearance:auto; -webkit-appearance:auto;
+  width:100%; padding:10px 12px; border-radius:10px; border:1px solid #d1d5db; background:#fff; font-size:16px;
+  box-shadow:0 1px 0 #fff inset; padding-right:40px; /* space for icon */
 }
+/* Show calendar glyph instead of ▼ on WebKit/Blink */
 input[type="date"]::-webkit-calendar-picker-indicator{
-  opacity: 1;
-  display: block;
-  cursor: pointer;
+  opacity:1; display:block; cursor:pointer;
+  width:1.4em; height:1.4em;
+  background:no-repeat center/1.2em url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236b7280'%3E%3Crect x='3' y='4' width='18' height='18' rx='3' ry='3'/%3E%3Crect x='3' y='8' width='18' height='4' fill='%23ffffff'/%3E%3Crect x='6' y='2' width='2' height='4' fill='%236b7280'/%3E%3Crect x='16' y='2' width='2' height='4' fill='%236b7280'/%3E%3Crect x='6' y='13' width='3' height='3' fill='%23ffffff'/%3E%3C/svg%3E");
 }
-    input:focus { outline: 2px solid var(--accent2); border-color: transparent; }
-    .req { color: #ef4444; font-weight: 700; margin-left: 4px; }
-    .btn { background: var(--blue); color: #fff; font-weight: 800; border: 0; padding: 12px 16px; border-radius: 12px; cursor: pointer; }
-    .btn.secondary { background: #111827; }
 
-    .camera { display: grid; gap: 12px; place-items: center; padding-top: 8px; }
-    .thumb { width: 120px; height: 160px; background: #f3f4f6; border: 2px dashed #cbd5e1; border-radius: 8px; background-position: center; background-size: cover; }
-    .thumbs { display:flex; gap:10px; flex-wrap:wrap; }
-    .thumb.small { width: 84px; height: 112px; }
-    .camrow { display:flex; gap:10px; }
-    .iconbtn { border: 0; background: #e5e7eb; padding: 10px 12px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+input:focus{ outline:2px solid var(--accent2); border-color:transparent; }
+.req{ color:#ef4444; font-weight:700; margin-left:4px; }
+.btn{ background:var(--blue); color:#fff; font-weight:800; border:0; padding:12px 16px; border-radius:12px; cursor:pointer; }
+.btn.secondary{ background:#111827; }
 
-    /* Results */
-    .results { padding: 18px; display: grid; gap: 8px; }
-    .h1 { font-weight: 900; font-size: 18px; }
-    .stat { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #e5e7eb; }
-    .stat b { color: var(--blue); }
-    .totals { margin-top: 10px; padding: 12px; background: #f8fafc; border-radius: 12px; border: 1px solid #e5e7eb; }
-    .closebar { display: grid; place-items: center; padding: 10px 16px; }
-    .closebtn { background: #ef4444; color: #fff; border: 0; padding: 10px 18px; border-radius: 10px; font-weight: 800; }
+/* Photos */
+.camera{ display:grid; gap:12px; place-items:center; padding-top:8px; }
+.thumb{ width:120px; height:160px; background:#f3f4f6; border:2px dashed #cbd5e1; border-radius:8px; background-position:center; background-size:cover; }
+.thumbs{ display:flex; gap:10px; flex-wrap:wrap; }
+.thumb.small{ width:84px; height:112px; }
+.camrow{ display:flex; gap:10px; flex-wrap:wrap; }
+.iconbtn{ border:0; background:#e5e7eb; padding:10px 12px; border-radius:10px; font-weight:700; cursor:pointer; }
 
-    /* Utility */
-    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  
-    /* Lightbox */
-    .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.85); display: none; align-items: center; justify-content: center; z-index: 9999; }
-    .lightbox.show { display: flex; }
-    .lightbox img { max-width: 92vw; max-height: 86vh; border-radius: 12px; box-shadow: 0 10px 30px #0007; }
-    .lb-ui { position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between; pointer-events: none; }
-    .lb-btn { pointer-events: auto; border: 0; background: rgba(255,255,255,.14); width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font-size: 20px; color: #fff; margin: 0 14px; }
-    .lb-close { position: absolute; top: 14px; right: 14px; }
-    .lb-counter { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); color: #fff; font-weight: 700; background: rgba(0,0,0,.35); padding: 6px 10px; border-radius: 999px; font-size: 12px; }
-  
-    /* Gallery layout */
-    .gallery { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); align-items: start; margin: 8px 16px 0; }
-    .gallery img { width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 12px #0002; display: block; }
+/* Results */
+.results{ padding:18px; display:grid; gap:8px; }
+.h1{ font-weight:900; font-size:18px; }
+.stat{ display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed #e5e7eb; }
+.stat b{ color:var(--blue); }
+.totals{ margin-top:10px; padding:12px; background:#f8fafc; border-radius:12px; border:1px solid #e5e7eb; }
+.closebar{ display:grid; place-items:center; padding:10px 16px; }
+.closebtn{ background:#ef4444; color:#fff; border:0; padding:10px 18px; border-radius:10px; font-weight:800; }
 
-    /* =================== Button Animations (buttons only) =================== */
-    :where(button, .btn, .iconbtn, .closebtn, .lb-btn, .month button, .fab){
-      transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease, background-color 160ms ease;
-      will-change: transform;
-    }
-    :where(button, .btn, .iconbtn, .closebtn, .lb-btn, .month button, .fab):hover{
-      transform: translateY(-1px);
-      box-shadow: 0 6px 14px #00000014;
-    }
-    :where(button, .btn, .iconbtn, .closebtn, .lb-btn, .month button, .fab):active{
-      transform: translateY(0) scale(0.98);
-      box-shadow: 0 2px 6px #00000020;
-      filter: brightness(0.98);
-    }
-    /* Floating Add button: gentle breathing */
-    .fab{ animation: tlw-breathe 2200ms ease-in-out infinite; }
-    @keyframes tlw-breathe{
-      0%{ box-shadow: 0 8px 18px #e11d2e55; }
-      50%{ box-shadow: 0 16px 26px #e11d2e66; }
-      100%{ box-shadow: 0 8px 18px #e11d2e55; }
-    }
+/* Share overlay (moved OUTSIDE :root) */
+.share-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; z-index:9998; }
+.share-overlay.show{ display:flex; }
+.share-card{ width:min(380px,92vw); background:#fff; border-radius:16px; padding:18px; box-shadow:0 14px 40px #0006; }
+.share-title{ font-weight:900; font-size:18px; margin:0 0 6px; }
+.share-sub{ color:#6b7280; font-size:13px; margin-bottom:12px; }
+.share-qr{ display:grid; place-items:center; margin:12px 0; }
+.share-actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:10px; }
+.linkbox{ display:flex; gap:8px; align-items:center; background:#f8fafc; border:1px solid #e5e7eb; padding:8px 10px; border-radius:10px; font-size:12px; overflow:auto; }
 
-  </style>
+/* Button micro-animations */
+:where(button,.btn,.iconbtn,.closebtn,.lb-btn,.month button,.fab){
+  transition:transform .16s ease, box-shadow .16s ease, filter .16s ease, background-color .16s ease;
+  will-change:transform;
+}
+:where(button,.btn,.iconbtn,.closebtn,.lb-btn,.month button,.fab):hover{
+  transform:translateY(-1px); box-shadow:0 6px 14px #00000014;
+}
+:where(button,.btn,.iconbtn,.closebtn,.lb-btn,.month button,.fab):active{
+  transform:translateY(0) scale(0.98); box-shadow:0 2px 6px #00000020; filter:brightness(0.98);
+}
+.fab{ animation:tlw-breathe 2200ms ease-in-out infinite; }
+@keyframes tlw-breathe{ 0%{box-shadow:0 8px 18px #e11d2e55} 50%{box-shadow:0 16px 26px #e11d2e66} 100%{box-shadow:0 8px 18px #e11d2e55} }
+
+/* Mobile focus zoom guard */
+input,select,textarea{ font-size:16px !important; }
+@supports (-webkit-touch-callout:none){ input,select,textarea{ font-size:16px !important; } }
+
+/* Narrow webview guard (Messenger/IG) */
+html,body{ width:100%; overflow-x:hidden; }
+.app{ width:100%; max-width:420px; margin:0 auto; overflow:hidden; }
+.form,.row,.row-2,.camrow{ min-width:0; }
+.row-2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.row > *, .row-2 > * { min-width:0; }
+
+/* Lightbox */
+.lightbox{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; z-index:9999; }
+.lightbox.show{ display:flex; }
+.lightbox img{ max-width:92vw; max-height:86vh; border-radius:12px; box-shadow:0 10px 30px #0007; }
+.lb-ui{ position:absolute; inset:0; display:flex; align-items:center; justify-content:space-between; pointer-events:none; }
+.lb-btn{ pointer-events:auto; border:0; background:rgba(255,255,255,.14); width:46px; height:46px; border-radius:50%; display:grid; place-items:center; font-size:20px; color:#fff; margin:0 14px; }
+.lb-close{ position:absolute; top:14px; right:14px; }
+.lb-counter{ position:absolute; bottom:14px; left:50%; transform:translateX(-50%); color:#fff; font-weight:700; background:rgba(0,0,0,.35); padding:6px 10px; border-radius:999px; font-size:12px; }
+.gallery{ display:grid; gap:10px; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); align-items:start; margin:8px 16px 0; }
+.gallery img{ width:100%; height:auto; border-radius:8px; box-shadow:0 4px 12px #0002; display:block; }
+</style>
 </head>
 <body>
   <div class="app" id="app">
-    <header>Time Log Worksheet <small id="build" style="font-weight:400;color:#6b7280">v2025.10.06-2</small></header>
+    <header>Time Log Worksheet <small id="build" style="font-weight:400;color:#6b7280">v2025.10.06-miniCal</small></header>
 
     <!-- Screen 1: Home / Calendar -->
     <section class="screen active" id="screen-home">
@@ -177,9 +191,10 @@ input[type="date"]::-webkit-calendar-picker-indicator{
               <div class="dow"><div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div></div>
               <div class="days" id="days"></div>
             </div>
-            <div class="cal-footer">
+            <div class="cal-footer" style="display:grid; gap:10px">
               <div class="fab" id="fab" title="Add hours"></div>
               <div class="hint">Tap the red cross to add hours for a day</div>
+              <button class="iconbtn" id="shareBtn" type="button" style="justify-self:center">🔗 Share / QR</button>
             </div>
           </div>
         </div>
@@ -190,42 +205,34 @@ input[type="date"]::-webkit-calendar-picker-indicator{
     <!-- Screen 2: Entry Form -->
     <section class="screen" id="screen-form">
       <form class="form" id="entryForm" novalidate>
-        <label>
-          Please enter a date <span class="req">*</span>
-          <input type="date" id="date" />
-        </label>
+        <label> Please enter a date <span class="req">*</span> <input type="date" id="date" /> </label>
 
-        <label>
-          Please enter your regular hours worked <span class="req">*</span>
+        <label> Please enter your regular hours worked <span class="req">*</span>
           <input type="number" id="regHours" min="0" step="0.25" placeholder="e.g. 8" />
         </label>
 
-        <label>
-          Please enter your overtime hours worked
+        <label> Please enter your overtime hours worked
           <input type="number" id="otHours" min="0" step="0.25" placeholder="e.g. 2" />
         </label>
 
-        <label>
-          Please enter your regular hourly rate $ <span class="req">*</span>
+        <label> Please enter your regular hourly rate $ <span class="req">*</span>
           <input type="number" id="regRate" min="0" step="0.01" placeholder="e.g. 20" />
         </label>
 
-        <label>
-          Please enter your overtime hourly rate (if known) $
+        <label> Please enter your overtime hourly rate (if known) $
           <input type="number" id="otRate" min="0" step="0.01" placeholder="auto 1.5× base" />
           <small id="otHint" style="color:#6b7280">Auto: 1.5 × Regular rate</small>
         </label>
 
         <div class="row-2">
-          <label>
-            Please select the beginning payment date
+          <label> Please select the beginning payment date
             <input type="date" id="payStart" />
           </label>
-          <label>
-            Please enter the ending payment date
+          <label> Please enter the ending payment date
             <input type="date" id="payEnd" />
           </label>
         </div>
+
         <div class="row-2" style="align-items:center">
           <label style="display:flex;align-items:center;gap:8px;font-weight:600">
             <input type="checkbox" id="keepRange" /> Keep this pay range
@@ -249,19 +256,17 @@ input[type="date"]::-webkit-calendar-picker-indicator{
           <div class="thumb" id="thumb"></div>
           <div class="thumbs" id="thumbs"></div>
         </div>
+
         <button class="btn" type="button" id="saveAll" onclick="saveAndShow();">Save</button>
-        <div class="closebar" style="padding-top:8px">
-          <button class="closebtn" id="goHomeFromForm">Home</button>
-        </div>
+        <div class="closebar" style="padding-top:8px"><button class="closebtn" id="goHomeFromForm">Home</button></div>
       </form>
     </section>
 
     <!-- Screen 3: Results / Activity -->
     <section class="screen" id="screen-activity">
       <div class="cal-wrap" style="padding-bottom:0">
-        <!-- Reuse header mini calendar visual -->
         <div class="calendar3d" aria-hidden="true">
-          <div class="page-shadow" style="height: 200px"></div>
+          <div class="page-shadow" style="height:200px"></div>
           <div class="pad">
             <div class="binder"><div class="ring"></div><div class="ring"></div></div>
             <div class="pad-head">
@@ -278,23 +283,39 @@ input[type="date"]::-webkit-calendar-picker-indicator{
 
       <div class="results">
         <div class="h1" id="detailDate">—</div>
-
-        <!-- A: Today -->
         <div class="totals" id="moneyBox"></div>
-
-        <!-- B: Up to date Hours -->
         <div class="totals" id="rollupBox"></div>
-
-        <!-- C: Pay period (bottom) -->
         <div class="totals" id="payBox"></div>
-
-        <!-- Photos -->
         <div id="thumbBox" class="gallery"></div>
       </div>
+
       <div class="closebar">
         <div style="display:flex;gap:10px;justify-content:center">
           <button class="closebtn" id="backToForm" style="background:#111827">Back</button>
           <button class="closebtn" id="closeActivity">Home</button>
+        </div>
+
+        <!-- Share / QR overlay -->
+        <div id="shareOverlay" class="share-overlay" aria-hidden="true">
+          <div class="share-card">
+            <div class="share-title">Share LogSheet</div>
+            <div class="share-sub">Send the link or scan the QR to open & install.</div>
+
+            <div class="linkbox">
+              <span id="shareUrlText">https://ker43d.github.io/time-log-worksheet/</span>
+              <button class="iconbtn" id="copyLinkBtn" type="button">Copy</button>
+            </div>
+
+            <div class="share-qr">
+              <img id="qrImg" alt="QR code" width="220" height="220"
+                   src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https%3A%2F%2Fker43d.github.io%2Ftime-log-worksheet%2F" />
+            </div>
+
+            <div class="share-actions">
+              <button class="iconbtn" id="nativeShareBtn" type="button">System Share</button>
+              <button class="closebtn" id="closeShareBtn" type="button">Close</button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -311,618 +332,454 @@ input[type="date"]::-webkit-calendar-picker-indicator{
     <div class="lb-counter" id="lbCounter"></div>
   </div>
 
-  <script>
-    // ===== Utilities =====
-    const $ = (s, p=document) => p.querySelector(s);
-    const $$ = (s, p=document) => [...p.querySelectorAll(s)];
-    const pad2 = n => String(n).padStart(2,'0');
-    const fmtDateKey = d => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
-    const monthNames = ["JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE","JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"];
-    // Parse a YYYY-MM-DD key into a *local* Date (avoid UTC shift)
-    const parseKey = (key) => { const [y,m,d] = key.split('-').map(Number); return new Date(y, (m||1)-1, d||1); };
+<script>
+/* ===== Helpers ===== */
+const $=(s,p=document)=>p.querySelector(s);
+const $$=(s,p=document)=>[...p.querySelectorAll(s)];
+const pad2=n=>String(n).padStart(2,'0');
+const fmtDateKey=d=>`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+const monthNames=["JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE","JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"];
+const parseKey=(key)=>{const [y,m,d]=key.split('-').map(Number);return new Date(y,(m||1)-1,d||1);};
 
-    // ===== Storage =====
-    const load = () => JSON.parse(localStorage.getItem('tlw-data')||'{}');
-    const save = (obj) => localStorage.setItem('tlw-data', JSON.stringify(obj));
+/* ===== Storage ===== */
+const load=()=>JSON.parse(localStorage.getItem('tlw-data')||'{}');
+const save=(o)=>localStorage.setItem('tlw-data',JSON.stringify(o));
+const readMeta=()=>JSON.parse(localStorage.getItem('tlw-meta')||'{}');
+const writeMeta=(m)=>localStorage.setItem('tlw-meta',JSON.stringify(m));
 
-    // Meta: active dot color for the current pay period (orange/green)
-    const readMeta = () => JSON.parse(localStorage.getItem('tlw-meta')||'{}');
-    const writeMeta = (m) => localStorage.setItem('tlw-meta', JSON.stringify(m));
+/* ===== State ===== */
+let state={ year:new Date().getFullYear(), month:new Date().getMonth(), sel:fmtDateKey(new Date()) };
 
-    // ===== State =====
-    let state = { year: new Date().getFullYear(), month: new Date().getMonth(), sel: fmtDateKey(new Date()) };
+/* ===== Calendar Render ===== */
+function renderCalendar(containerDays, year, month, options={}){
+  const todayKey=fmtDateKey(new Date());
+  containerDays.innerHTML='';
+  const first=new Date(year,month,1);
+  const startIdx=first.getDay();
+  const daysInMo=new Date(year,month+1,0).getDate();
+  const prevDays=new Date(year,month,0).getDate();
+  const totalCells=42;
 
-    // ===== Calendar Render =====
-    function renderCalendar(containerDays, year, month, options = {}) {
-      const todayKey = fmtDateKey(new Date());
-      containerDays.innerHTML = '';
-      const first = new Date(year, month, 1);
-      const startIdx = first.getDay();
-      const daysInMo = new Date(year, month + 1, 0).getDate();
-      const prevDays = new Date(year, month, 0).getDate();
-      const totalCells = 42; // 6 weeks grid
+  const store=load();
+  const selectedKey=options.selectedKey || state.sel;
 
-      const store = load();
-      const selectedKey = options.selectedKey || state.sel;
+  const inPeriod=(key)=>!!store[key];
 
-      const inPeriod = (key) => !!store[key];
+  for(let i=0;i<totalCells;i++){
+    const cell=document.createElement('div');
+    cell.className='day';
+    let dayNum,dKey;
 
-      for (let i = 0; i < totalCells; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'day';
-        let dayNum, dKey;
+    if(i<startIdx){ dayNum=prevDays-startIdx+i+1; cell.classList.add('muted'); dKey=fmtDateKey(new Date(year,month-1,dayNum)); }
+    else if(i>=startIdx+daysInMo){ dayNum=i-(startIdx+daysInMo)+1; cell.classList.add('muted'); dKey=fmtDateKey(new Date(year,month+1,dayNum)); }
+    else { dayNum=i-startIdx+1; dKey=fmtDateKey(new Date(year,month,dayNum)); }
+    cell.textContent=dayNum;
 
-        if (i < startIdx) {
-          dayNum = prevDays - startIdx + i + 1;
-          cell.classList.add('muted');
-          dKey = fmtDateKey(new Date(year, month - 1, dayNum));
-        } else if (i >= startIdx + daysInMo) {
-          dayNum = i - (startIdx + daysInMo) + 1;
-          cell.classList.add('muted');
-          dKey = fmtDateKey(new Date(year, month + 1, dayNum));
-        } else {
-          dayNum = i - startIdx + 1;
-          dKey = fmtDateKey(new Date(year, month, dayNum));
-        }
-        cell.textContent = dayNum;
+    if(dKey===todayKey) cell.classList.add('today');
+    if(dKey===selectedKey) cell.classList.add('sel');
 
-        if (dKey === todayKey) cell.classList.add('today');
-        if (dKey === selectedKey) cell.classList.add('sel');
-
-        if (inPeriod(dKey)) {
-          const dot = document.createElement('div');
-          const activeColor = (store[dKey] && store[dKey].color) ? store[dKey].color : (readMeta().activeColor || 'orange');
-          dot.className = 'dot ' + activeColor;
-          cell.appendChild(dot);
-        }
-
-        cell.addEventListener('click', () => {
-          state.sel = dKey;
-          const s = load();
-          if (s[dKey]) { openActivity(dKey); } else { openForm(dKey); }
-        });
-        containerDays.appendChild(cell);
-      }
+    if(inPeriod(dKey)){
+      const dot=document.createElement('div');
+      const activeColor=(store[dKey]&&store[dKey].color)?store[dKey].color:(readMeta().activeColor||'orange');
+      dot.className='dot '+activeColor; cell.appendChild(dot);
     }
 
-    function paintHome() {
-      $('#monthLabel').textContent = monthNames[state.month];
-      $('#yearLabel').textContent = state.year;
-      renderCalendar($('#days'), state.year, state.month, { onSelect: openActivity, selectedKey: state.sel });
-      showHomeSummary();
+    cell.addEventListener('click',()=>{
+      state.sel=dKey;
+      const s=load();
+      if(s[dKey]) openActivity(dKey); else openForm(dKey);
+    });
+    containerDays.appendChild(cell);
+  }
+}
+
+function paintHome(){
+  $('#monthLabel').textContent=monthNames[state.month];
+  $('#yearLabel').textContent=state.year;
+  renderCalendar($('#days'),state.year,state.month,{selectedKey:state.sel});
+  showHomeSummary();
+}
+
+function moveMonth(delta){
+  let y=state.year, m=state.month+delta;
+  if(m<0){m=11; y--;} else if(m>11){m=0; y++;}
+  state.year=y; state.month=m; paintHome();
+}
+
+/* ===== Totals / Money ===== */
+function totalsForMonth(year,month){
+  const store=load(); let reg=0, ot=0;
+  for(const [k,v] of Object.entries(store)){
+    const d=parseKey(k);
+    if(d.getFullYear()===year && d.getMonth()===month){ reg+=Number(v.reg||0); ot+=Number(v.ot||0); }
+  }
+  return {reg,ot,total:reg+ot};
+}
+function moneyForRange(start,end,baseReg=0,baseOT=0){
+  if(!start||!end) return null;
+  const store=load(); let rPay=0,oPay=0;
+  const s=parseKey(start), e=parseKey(end);
+  for(const [k,v] of Object.entries(store)){
+    const d=parseKey(k);
+    if(d>=s && d<=e){
+      const regRate=Number(v.regRate || baseReg || 0);
+      const otRateCalc=Number(v.otRate || baseOT || (regRate? regRate*1.5 : 0));
+      rPay += (Number(v.reg||0)*regRate);
+      oPay += (Number(v.ot||0)*otRateCalc);
     }
+  }
+  return {rPay,oPay,gross:rPay+oPay};
+}
+function showHomeSummary(){
+  const t=totalsForMonth(state.year,state.month);
+  $('#homeSummary').innerHTML=`
+    <div class="stat">This month regular hours: <b>${t.reg.toFixed(2)}</b></div>
+    <div class="stat">This month overtime hours: <b>${t.ot.toFixed(2)}</b></div>
+    <div class="stat">Total hours: <b>${t.total.toFixed(2)}</b></div>`;
+}
 
-    function moveMonth(delta) {
-      let y = state.year, m = state.month + delta;
-      if (m < 0) { m = 11; y--; } else if (m > 11) { m = 0; y++; }
-      state.year = y; state.month = m; paintHome();
-    }
+/* ===== Form handling ===== */
+function saveAndShow(){
+  let dateRaw=$('#date').value;
+  if(!dateRaw){
+    const now=new Date();
+    dateRaw=`${now.getFullYear()}-${pad2(now.getMonth()+1)}-${pad2(now.getDate())}`;
+    $('#date').value=dateRaw;
+  }
+  const key=dateRaw;
 
-    // ===== Totals & Money =====
-    function totalsForMonth(year, month) {
-      const store = load();
-      let reg=0, ot=0;
-      for (const [k,v] of Object.entries(store)) {
-        const d = parseKey(k);
-        if (d.getFullYear()===year && d.getMonth()===month) {
-          reg += Number(v.reg||0); ot += Number(v.ot||0);
-        }
-      }
-      return {reg, ot, total: reg+ot};
-    }
+  const keep=$('#keepRange') && $('#keepRange').checked;
+  const settings=JSON.parse(localStorage.getItem('tlw-settings')||'{}');
+  if(keep){
+    const ns={ keep:true, payStart:$('#payStart').value||'', payEnd:$('#payEnd').value||'' };
+    localStorage.setItem('tlw-settings',JSON.stringify(ns));
+  }else{
+    localStorage.setItem('tlw-settings',JSON.stringify({ ...(settings||{}), keep:false }));
+  }
 
-    function moneyForRange(start, end, baseReg=0, baseOT=0) {
-      if (!start || !end) return null;
-      const store = load();
-      let rPay=0, oPay=0;
-      const s = parseKey(start), e = parseKey(end);
-      for (const [k,v] of Object.entries(store)) {
-        const d = parseKey(k);
-        if (d>=s && d<=e) {
-          const regRate = Number(v.regRate || baseReg || 0);
-          const otRateCalc = Number(v.otRate || baseOT || (regRate ? regRate*1.5 : 0));
-          rPay += (Number(v.reg||0) * regRate);
-          oPay += (Number(v.ot||0) * otRateCalc);
-        }
-      }
-      return {rPay, oPay, gross: rPay+oPay};
-    }
+  const rec={
+    reg:Number($('#regHours').value||0),
+    ot:Number($('#otHours').value||0),
+    regRate:Number($('#regRate').value||0),
+    otRate:Number($('#otRate').value||0),
+    payStart:$('#payStart').value||'',
+    payEnd:$('#payEnd').value||'',
+  };
 
-    function showHomeSummary() {
-      const t = totalsForMonth(state.year, state.month);
-      $('#homeSummary').innerHTML = `
-        <div class="stat">This month regular hours: <b>${t.reg.toFixed(2)}</b></div>
-        <div class="stat">This month overtime hours: <b>${t.ot.toFixed(2)}</b></div>
-        <div class="stat">Total hours: <b>${t.total.toFixed(2)}</b></div>
-      `;
-    }
+  const t=document.getElementById('thumb');
+  const extra=$$('#thumbs .thumb');
+  const photos=[];
+  if(t && t.dataset && t.dataset.dataUrl) photos.push(t.dataset.dataUrl);
+  extra.forEach(el=>{ if(el.dataset && el.dataset.dataUrl) photos.push(el.dataset.dataUrl); });
+  if(photos.length) rec.photos=photos;
 
-    // ===== Form Handling =====
-    // Always parse 'YYYY-MM-DD' in LOCAL time
-    function saveAndShow(){
-      let dateRaw = $('#date').value;
-      if (!dateRaw) {
-        const now = new Date();
-        dateRaw = `${now.getFullYear()}-${pad2(now.getMonth()+1)}-${pad2(now.getDate())}`;
-        $('#date').value = dateRaw;
-      }
-      const key = dateRaw; // keep as YYYY-MM-DD
+  const store=load();
+  const existing=store[key]||{};
+  const meta=readMeta();
+  const color=existing.color || (meta.activeColor || 'orange');
+  store[key]={ ...existing, ...rec, color };
 
-      // Persist global range if requested
-      const keep = $('#keepRange') && $('#keepRange').checked;
-      const settings = JSON.parse(localStorage.getItem('tlw-settings')||'{}');
-      if (keep) {
-        const newSettings = { keep:true, payStart: $('#payStart').value||'', payEnd: $('#payEnd').value||'' };
-        localStorage.setItem('tlw-settings', JSON.stringify(newSettings));
-      } else {
-        localStorage.setItem('tlw-settings', JSON.stringify({ ...(settings||{}), keep:false }));
-      }
+  try{ save(store); }
+  catch(err){
+    if(String(err).includes('QuotaExceededError')){
+      if(store[key] && store[key].photos) delete store[key].photos;
+      try{ save(store); alert('Photos were not saved to avoid storage limit. Hours and pay were saved.'); }
+      catch(e2){ alert('Storage is full. Please clear some photos (Clear Photos) and try again.'); return; }
+    } else { throw err; }
+  }
 
-      const rec = {
-        reg: Number($('#regHours').value||0),
-        ot: Number($('#otHours').value||0),
-        regRate: Number($('#regRate').value||0),
-        otRate: Number($('#otRate').value||0),
-        payStart: $('#payStart').value||'',
-        payEnd:   $('#payEnd').value||'',
+  state.sel=key; openActivity(key);
+}
+window.saveAndShow=saveAndShow;
+
+/* Photo helpers */
+function compressImage(file,maxDim=1280,quality=.72){
+  return new Promise((resolve,reject)=>{
+    try{
+      const reader=new FileReader();
+      reader.onload=()=>{
+        const img=new Image();
+        img.onload=()=>{
+          const w=img.width,h=img.height,scale=Math.min(1,maxDim/Math.max(w,h));
+          const nw=Math.round(w*scale), nh=Math.round(h*scale);
+          const canvas=document.createElement('canvas'); canvas.width=nw; canvas.height=nh;
+          const ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,nw,nh);
+          let dataUrl; try{ dataUrl=canvas.toDataURL('image/jpeg',quality); } catch(e){ dataUrl=reader.result; }
+          resolve(dataUrl);
+        };
+        img.onerror=()=>reject(new Error('image load error'));
+        img.src=reader.result;
       };
-      // Collect photos as data URLs
-      const t = document.getElementById('thumb');
-      const extra = $$('#thumbs .thumb');
-      const photos = [];
-      if (t && t.dataset && t.dataset.dataUrl) photos.push(t.dataset.dataUrl);
-      extra.forEach(el=>{ if(el.dataset && el.dataset.dataUrl) photos.push(el.dataset.dataUrl); });
-      if (photos.length) rec.photos = photos;
+      reader.onerror=()=>reject(reader.error||new Error('read error'));
+      reader.readAsDataURL(file);
+    }catch(err){ reject(err); }
+  });
+}
+function bindUploadButtons(){
+  const btnCam=$('#btnCamera'), btnUp=$('#btnUpload'), btnMore=$('#btnAddMore'), btnMoreCam=$('#btnAddMoreCam'), btnClear=$('#btnClearPhotos');
+  const camInp=$('#camCapture'), camMoreInp=$('#camCaptureMore'), upInp=$('#fileUpload'), moreInp=$('#fileUploadMore');
+  const mainEl=$('#thumb'), thumbsWrap=$('#thumbs');
 
-      const store = load();
-      const existing = store[key] || {};
-      // lock dot color at save time so past periods keep their color
-      const meta = readMeta();
-      const color = existing.color || (meta.activeColor || 'orange');
-      store[key] = { ...existing, ...rec, color };
-      try {
-        save(store);
-      } catch (err) {
-        if (String(err).includes('QuotaExceededError')) {
-          if (store[key] && store[key].photos) delete store[key].photos;
-          try { save(store); alert('Photos were not saved to avoid storage limit. Hours and pay were saved.'); }
-          catch (e2) { alert('Storage is full. Please clear some photos (Clear Photos) and try again.'); return; }
-        } else { throw err; }
-      }
-      state.sel = key; openActivity(key);
-    }
-    window.saveAndShow = saveAndShow;
+  const buildList=()=>{
+    const list=[]; if(mainEl && mainEl.dataset && mainEl.dataset.dataUrl) list.push(mainEl.dataset.dataUrl);
+    $$('#thumbs .thumb').forEach(e=>{ if(e.dataset && e.dataset.dataUrl) list.push(e.dataset.dataUrl); });
+    return list;
+  };
+  const openMain=()=>{ try{ if(typeof openLightbox==='function') openLightbox(0,buildList()); }catch(_){} };
+  const setMain=(dataUrl)=>{ if(!mainEl) return; mainEl.style.backgroundImage='url('+dataUrl+')'; mainEl.dataset.dataUrl=dataUrl; mainEl.style.cursor='zoom-in'; mainEl.onclick=openMain; };
+  const addThumb=(dataUrl)=>{
+    const th=document.createElement('div'); th.className='thumb small'; th.style.backgroundImage='url('+dataUrl+')'; th.dataset.dataUrl=dataUrl; th.style.cursor='zoom-in';
+    th.addEventListener('click',()=>{ const list=buildList(); const idx=list.indexOf(dataUrl); try{ if(typeof openLightbox==='function') openLightbox(idx<0?0:idx,list); }catch(_){} });
+    thumbsWrap.appendChild(th);
+  };
+  const handleFile=(file)=>{
+    if(!file) return;
+    compressImage(file,1280,.72).then(dataUrl=>{
+      if(!mainEl.dataset || !mainEl.dataset.dataUrl) setMain(dataUrl); else addThumb(dataUrl);
+    }).catch(()=>{
+      const r=new FileReader(); r.onload=()=>{ const dataUrl=r.result; if(!mainEl.dataset || !mainEl.dataset.dataUrl) setMain(dataUrl); else addThumb(dataUrl); }; r.readAsDataURL(file);
+    });
+  };
 
-    // --- Photo compression helper (keeps images lightweight for localStorage) ---
-    function compressImage(file, maxDim = 1280, quality = 0.72) {
-      return new Promise(function(resolve, reject){
-        try {
-          var reader = new FileReader();
-          reader.onload = function(){
-            var img = new Image();
-            img.onload = function(){
-              var w = img.width, h = img.height;
-              var scale = Math.min(1, maxDim/Math.max(w,h));
-              var nw = Math.round(w*scale), nh = Math.round(h*scale);
-              var canvas = document.createElement('canvas');
-              canvas.width = nw; canvas.height = nh;
-              var ctx = canvas.getContext('2d');
-              ctx.drawImage(img, 0, 0, nw, nh);
-              var dataUrl;
-              try { dataUrl = canvas.toDataURL('image/jpeg', quality); }
-              catch(e){ dataUrl = reader.result; }
-              resolve(dataUrl);
-            };
-            img.onerror = function(){ reject(new Error('image load error')); };
-            img.src = reader.result;
-          };
-          reader.onerror = function(){ reject(reader.error || new Error('read error')); };
-          reader.readAsDataURL(file);
-        } catch(err){ reject(err); }
-      });
-    }
+  if(btnCam && camInp) btnCam.onclick=()=>camInp.click();
+  if(btnUp  && upInp ) btnUp.onclick =()=>upInp.click();
+  if(btnMore && moreInp) btnMore.onclick=()=>moreInp.click();
+  if(btnMoreCam && camMoreInp) btnMoreCam.onclick=()=>camMoreInp.click();
 
-    // Simple photo handlers (data URL approach)
-    function bindUploadButtons(){
-      var btnCam = document.getElementById('btnCamera');
-      var btnUp  = document.getElementById('btnUpload');
-      var btnMore= document.getElementById('btnAddMore');
-      var btnMoreCam = document.getElementById('btnAddMoreCam');
-      var btnClear = document.getElementById('btnClearPhotos');
-      var camInp = document.getElementById('camCapture');
-      var camMoreInp = document.getElementById('camCaptureMore');
-      var upInp  = document.getElementById('fileUpload');
-      var moreInp= document.getElementById('fileUploadMore');
-
-      function addThumb(dataUrl){
-        var th=document.createElement('div'); th.className='thumb small'; th.style.backgroundImage='url('+dataUrl+')'; th.dataset.dataUrl=dataUrl;
-        // Make extra thumbs clickable to open full-screen lightbox
-        th.addEventListener('click', function(){
-          try{
-            var list=[];
-            var m=document.getElementById('thumb');
-            if(m && m.dataset && m.dataset.dataUrl) list.push(m.dataset.dataUrl);
-            $$('#thumbs .thumb').forEach(function(e){ if(e.dataset && e.dataset.dataUrl) list.push(e.dataset.dataUrl); });
-            var idx=list.indexOf(th.dataset.dataUrl);
-            if(typeof openLightbox==='function') openLightbox(idx<0?0:idx, list);
-          }catch(_){/* ignore */}
-        });
-        document.getElementById('thumbs').appendChild(th);
-      }
-      function handleFile(file, toMain){
-        if(!file) return;
-        // Compress before showing/saving to keep storage low
-        compressImage(file, 1280, 0.72).then(function(dataUrl){
-          et.dataUrl) list.push(th.dataset.dataUrl);
-                $$('#thumbs .thumb').forEach(function(e){ if(e.dataset && e.dataset.dataUrl) list.push(e.dataset.dataUrl); });
-                if(typeof openLightbox==='function') openLightbox(0, list);
-              }catch(_){/* ignore */}
-            };
-          } else {
-            addThumb(dataUrl);
-          }
-        }).catch(function(){
-          // Fallback: raw file
-          var r=new FileReader();
-          r.onload=function(){
-            var dataUrl=r.result;
-            if(toMain){
-            var th=document.getElementById('thumb');
-            th.style.backgroundImage='url('+dataUrl+')';
-            th.dataset.dataUrl=dataUrl;
-            // Click main preview to open lightbox starting at main image
-            th.onclick=function(){
-              try{
-                var list=[];
-                if(th.dataset && th.dataset.dataUrl) list.push(th.dataset.dataUrl);
-                $$('#thumbs .thumb').forEach(function(e){ if(e.dataset && e.dataset.dataUrl) list.push(e.dataset.dataUrl); });
-                if(typeof openLightbox==='function') openLightbox(0, list);
-              }catch(_){/* ignore */}
-            };
-          } else {
-              addThumb(dataUrl);
-            }
-          };
-          r.readAsDataURL(file);
-        });
-      }
-
-      if (btnCam && camInp) btnCam.onclick=function(){ camInp.click(); };
-      if (btnUp  && upInp)  btnUp.onclick=function(){ upInp.click(); };
-      if (btnMore){ btnMore.onclick=function(){ if (moreInp) moreInp.click(); }; }
-      if (btnMoreCam){ btnMoreCam.onclick=function(){ if (camMoreInp) camMoreInp.click(); }; }
-      if (btnClear){
-        btnClear.onclick=function(){
-          var main=document.getElementById('thumb');
-          if (main){ main.style.backgroundImage=''; if (main.dataset) delete main.dataset.dataUrl; }
-          var ts=document.getElementById('thumbs'); if (ts) ts.innerHTML='';
-          if (camInp) camInp.value=''; if (upInp) upInp.value=''; if (moreInp) moreInp.value='';
-        };
-      }
-      if (camInp) camInp.onchange=function(e){ handleFile(e.target.files && e.target.files[0], true); };
-      if (camMoreInp) camMoreInp.onchange=function(e){ handleFile(e.target.files && e.target.files[0], false); };
-      if (upInp)  upInp.onchange=function(e){ handleFile(e.target.files && e.target.files[0], true); };
-      if (moreInp) moreInp.onchange=function(e){ var files=[...(e.target.files||[])]; files.forEach(function(f){handleFile(f,false);}); e.target.value=''; };
-    }
-    bindUploadButtons();
-
-    function openForm(dateKey) {
-      $('#screen-home').classList.remove('active');
-      $('#screen-form').classList.add('active');
-      const d = dateKey ? parseKey(dateKey) : new Date();
-      $('#date').value = `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
-
-      // preload any existing
-      const store = load();
-      const rec = store[fmtDateKey(d)] || {};
-      $('#regHours').value = rec.reg ?? '';
-      $('#otHours').value = rec.ot ?? '';
-      $('#regRate').value = rec.regRate ?? '';
-      $('#otRate').value = rec.otRate ?? '';
-
-      // global range persist
-      const settings = JSON.parse(localStorage.getItem('tlw-settings')||'{}');
-      if (settings.keep) {
-        $('#keepRange').checked = true;
-        if (settings.payStart) $('#payStart').value = settings.payStart;
-        if (settings.payEnd)   $('#payEnd').value   = settings.payEnd;
-      } else {
-        // Default: start empty, do not preload from any record
-        $('#keepRange').checked = false;
-        $('#payStart').value = '';
-        $('#payEnd').value = '';
-      }
-
-      // Auto OT = 1.5x when otRate empty or previously auto
-      const base = Number($('#regRate').value||0);
-      if (!$('#otRate').value && base>0) { $('#otRate').value = (base*1.5).toFixed(2); $('#otRate').dataset.auto='1'; }
-      $('#regRate').addEventListener('input', ()=>{
-        const base = Number($('#regRate').value||0);
-        if (($('#otRate').dataset.auto==='1') || !$('#otRate').value) {
-          if (base>0) { $('#otRate').value = (base*1.5).toFixed(2); $('#otRate').dataset.auto='1'; }
-        }
-      });
-      $('#otRate').addEventListener('input', ()=>{ if ($('#otRate').value) $('#otRate').dataset.auto='0'; });
-
-      // If pay range fields are empty, default them to the selected date after Reset
-      function syncPayRangeToDate(){
-        const dv = $('#date').value; if (!dv) return;
-        const ps = $('#payStart');
-        const pe = $('#payEnd');
-        const keepBox = $('#keepRange');
-        const keepOn = !!(keepBox && keepBox.checked);
-        // Only follow the date after a Reset (when dataset.follow==='once')
-        if (ps && ps.dataset.follow === 'once') { ps.value = dv; ps.dataset.follow = '0'; }
-        // Only auto-fill payEnd when keep range is on; otherwise leave blank
-        if (pe) {
-          if (keepOn && !pe.value) pe.value = dv;
-          // Always enforce min guard, but prefer payStart if present
-          pe.min = (ps && ps.value) ? ps.value : dv;
-          if (pe.value && ps && ps.value && pe.value < ps.value) pe.value = ps.value;
-        }
-      }
-        // Only auto-fill payEnd when keep range is on; otherwise leave blank
-        if (pe) {
-          if (keepOn && !pe.value) pe.value = dv;
-          // Always enforce min guard, but prefer payStart if present
-          pe.min = (ps && ps.value) ? ps.value : dv;
-          if (pe.value && ps && ps.value && pe.value < ps.value) pe.value = ps.value;
-        }
-      }
-        // End date only auto-fills when empty
-        if (pe && !pe.value) pe.value = dv;
-        // End date must be >= top date
-        if (pe) {
-          pe.min = dv;                         // picker can't go earlier than the top date
-          if (!pe.value || pe.value < dv) {    // bump up if empty or earlier
-            pe.value = dv;
-          }
-        }
-      }
-      $('#date').addEventListener('change', syncPayRangeToDate);
-      $('#date').addEventListener('input', syncPayRangeToDate);
-      // If user edits payStart manually, stop following the date field
-      const psElInit = $('#payStart'); if (psElInit) psElInit.addEventListener('input', ()=>{ psElInit.dataset.follow = '0'; });      // run once on open in case fields are empty
-      syncPayRangeToDate();
-
-      // Keep payEnd >= payStart (also when payStart is edited manually)
-      const peEl = $('#payEnd');
-      const psElInit2 = $('#payStart');
-      if (psElInit2 && peEl) {
-        const syncEndMin = () => {
-          peEl.min = psElInit2.value || '';
-          if (peEl.value && psElInit2.value && peEl.value < psElInit2.value) {
-            peEl.value = psElInit2.value;
-          }
-        };
-        psElInit2.addEventListener('change', syncEndMin);
-        psElInit2.addEventListener('input',  syncEndMin);
-        syncEndMin();
-      }
-
-      // clear previews (form picks new photos)
-      var main = document.getElementById('thumb');
-      var ts = document.getElementById('thumbs'); if (ts) ts.innerHTML='';
-      if (main){ main.style.backgroundImage=''; if (main.dataset) delete main.dataset.dataUrl; }
-    }
-
-    // ===== Activity / Detail =====
-    function openActivity(dateKey) {
-      $('#screen-home').classList.remove('active');
-      $('#screen-form').classList.remove('active');
-      $('#screen-activity').classList.add('active');
-
-      if (!dateKey) dateKey = state.sel || fmtDateKey(new Date());
-      const d = parseKey(dateKey);
-
-      $('#aMonth').textContent = monthNames[d.getMonth()];
-      $('#aYear').textContent  = d.getFullYear();
-      renderCalendar($('#aDays'), d.getFullYear(), d.getMonth(), { onSelect: openActivity, selectedKey: dateKey });
-
-      const store = load();
-      const rec = store[dateKey] || {};
-      $('#detailDate').textContent = d.toLocaleDateString(undefined,{weekday:'long', year:'numeric', month:'long', day:'numeric'});
-
-      // Up to date Hours: from start → SELECTED day
-      const settings = JSON.parse(localStorage.getItem('tlw-settings')||'{}');
-      let sKey = rec.payStart || settings.payStart || null;
-      if (!sKey) { sKey = fmtDateKey(d); }
-
-      let endDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-
-      // ---- Today block
-      const dayReg = Number(rec.reg||0);
-      const dayOT  = Number(rec.ot||0);
-      const dayTotal = dayReg + dayOT;
-      const dayRegRate = Number(rec.regRate||0);
-      const dayOtRate  = Number(rec.otRate|| (dayRegRate? dayRegRate*1.5 : 0));
-      const dayRegPay  = dayReg * dayRegRate;
-      const dayOtPay   = dayOT  * dayOtRate;
-      const todayHtml = `
-        <div style="font-weight:800;margin-bottom:6px">Today</div>
-        <div class="stat">Regular Hours: <b>${dayReg.toFixed(1)}</b></div>
-        <div class="stat">Overtime Hours: <b>${dayOT.toFixed(1)}</b></div>
-        <div class="stat">Total Day Hours: <b>${dayTotal.toFixed(1)}</b></div>
-        <div class="stat">Regular Day Earn: <b>$${dayRegPay.toFixed(2)}</b></div>
-        <div class="stat">Overtime Day Earn: <b>$${dayOtPay.toFixed(2)}</b></div>
-        <div class="stat">Total Day Earn: <b>$${(dayRegPay+dayOtPay).toFixed(2)}</b></div>`;
-
-      // ---- Roll-up (sKey → endDate)
-      let accReg = 0, accOT = 0;
-      if (sKey) {
-        const sDate = parseKey(sKey);
-        for (const [k,v] of Object.entries(store)) {
-          const dk = parseKey(k);
-          if (dk >= sDate && dk <= endDate) { accReg += Number(v.reg||0); accOT += Number(v.ot||0); }
-        }
-      }
-      const uptoHtml = `
-        <div class="stat">Regular Hours: <b>${accReg.toFixed(0)}</b></div>
-        <div class="stat">Overtime Hours: <b>${accOT.toFixed(0)}</b></div>
-        <div class="stat">Total Hours: <b>${(accReg+accOT).toFixed(0)}</b></div>`;
-
-      // ---- Pay period totals (sKey → endDate)
-      const endKeyForMoney = sKey ? fmtDateKey(endDate) : null;
-      const payAgg = (sKey && endKeyForMoney)
-        ? moneyForRange(sKey, endKeyForMoney, Number(rec.regRate||0), Number(rec.otRate||0))
-        : null;
-      const payHtml = payAgg ? `
-        <div style="font-weight:800;margin-top:12px;margin-bottom:6px">Pay period: ${sKey?parseKey(sKey).toLocaleDateString():''} → ${endDate.toLocaleDateString()}</div>
-        <div class="stat">Regular pay: <b>$${payAgg.rPay.toFixed(2)}</b></div>
-        <div class="stat">Overtime pay: <b>$${payAgg.oPay.toFixed(2)}</b></div>
-        <div class="stat">Gross: <b>$${payAgg.gross.toFixed(2)}</b></div>`
-        : `<div>Enter a pay range to see gross totals.</div>`;
-
-      // Place content (cards)
-      $('#moneyBox').innerHTML = todayHtml;
-      $('#rollupBox').innerHTML = '<div style="font-weight:800;margin-bottom:6px">Up to date Hours</div>' + uptoHtml;
-      $('#payBox').innerHTML = payHtml;
-
-      // Photos (legacy data URL array)
-      const thumbBox = $('#thumbBox');
-      thumbBox.innerHTML = '';
-      const photos = Array.isArray(rec.photos) ? rec.photos.slice(0) : [];
-      photos.forEach((src, i) => {
-        const wrap = document.createElement('div');
-        const img = document.createElement('img'); img.src = src; img.alt='Saved photo';
-        img.style.cursor='zoom-in';
-        img.addEventListener('click', ()=> openLightbox(i, photos));
-        wrap.appendChild(img); thumbBox.appendChild(wrap);
-      });
-    }
-; (function bindNav(){
-      const closeBtn = $('#closeActivity');
-      if (closeBtn) closeBtn.addEventListener('click', () => {
-        $('#screen-activity').classList.remove('active');
-        $('#screen-home').classList.add('active');
-        paintHome();
-      });
-      const backBtn = $('#backToForm');
-      if (backBtn) backBtn.addEventListener('click', () => { openForm(state.sel); });
-      const fab = $('#fab'); if (fab) fab.addEventListener('click', () => openForm(state.sel));
-      const prev = $('#prevMo'); if (prev) prev.addEventListener('click', () => moveMonth(-1));
-      const next = $('#nextMo'); if (next) next.addEventListener('click', () => moveMonth(1));
-      const homeForm = $('#goHomeFromForm'); if (homeForm) homeForm.addEventListener('click', () => { $('#screen-form').classList.remove('active'); $('#screen-home').classList.add('active'); paintHome(); });
-      const reset = $('#resetAll'); if (reset) reset.addEventListener('click', ()=>{
-        if (confirm('Clear the pay range and this form? Saved days will stay.')){
-          // Toggle the active dot color to mark a new range
-          const _m = readMeta(); _m.activeColor = (_m.activeColor === 'green') ? 'orange' : 'green'; writeMeta(_m);
-          try { localStorage.removeItem('tlw-settings'); } catch(_) {}
-          ['date','regHours','otHours','regRate','otRate','payStart','payEnd'].forEach(function(id){ var el=document.getElementById(id); if (el) el.value=''; });
-          // put payStart into follow-mode so it mirrors #date until user edits it
-          var psFollow = document.getElementById('payStart'); if (psFollow) psFollow.dataset.follow = 'once';
-          var keep=document.getElementById('keepRange'); if (keep) keep.checked=false;
-          var t = document.getElementById('thumb'); if (t){ t.style.backgroundImage=''; if (t.dataset) delete t.dataset.dataUrl; }
-          var ts = document.getElementById('thumbs'); if (ts) ts.innerHTML='';
-          openForm(state.sel);
-        }
-      });
-    })();
-
-    // Fresh-start testing (?fresh=1 clears app storage)
-; (function freshStart(){
-      try {
-        const params = new URLSearchParams(location.search);
-        if (params.get('fresh') === '1') {
-          localStorage.removeItem('tlw-data');
-          localStorage.removeItem('tlw-settings');
-          localStorage.removeItem('tlw-meta');
-          if (history && history.replaceState) {
-            const url = location.origin + location.pathname + location.hash;
-            history.replaceState(null, '', url);
-          }
-        }
-      } catch(_) {}
-    })();
-
-    // Init
-; (function init(){
-      const now = new Date();
-      state.year = now.getFullYear(); state.month = now.getMonth(); state.sel = fmtDateKey(now);
-      const meta = readMeta();
-      if (!meta.activeColor) { meta.activeColor = 'orange'; writeMeta(meta); }
-      paintHome();
-    })();
-
-    // ===== Lightbox (view saved photos) =====
-; (function lightbox(){
-  let list = [];
-  let idx = 0;
-  const el = document.getElementById('lightbox');
-  const img = document.getElementById('lbImg');
-  const closeBtn = document.getElementById('lbClose');
-  const prevBtn = document.getElementById('lbPrev');
-  const nextBtn = document.getElementById('lbNext');
-  const counter = document.getElementById('lbCounter');
-
-  function show(){
-    if (!list.length) return;
-    img.src = list[idx];
-    counter.textContent = (idx+1) + ' / ' + list.length;
-  }
-  function open(i, arr){
-    list = Array.isArray(arr) ? arr.slice() : [];
-    idx = Math.max(0, Math.min(i||0, list.length-1));
-    el.classList.add('show');
-    el.setAttribute('aria-hidden','false');
-    show();
-    document.addEventListener('keydown', onKey);
-  }
-  function close(){
-    el.classList.remove('show');
-    el.setAttribute('aria-hidden','true');
-    document.removeEventListener('keydown', onKey);
-  }
-  function prev(){ if (!list.length) return; idx = (idx-1+list.length)%list.length; show(); }
-  function next(){ if (!list.length) return; idx = (idx+1)%list.length; show(); }
-  function onKey(e){
-    if (e.key==='Escape') close();
-    if (e.key==='ArrowLeft') prev();
-    if (e.key==='ArrowRight') next();
-  }
-
-  el.addEventListener('click', (e)=>{ if(e.target===el) close(); });
-  if (closeBtn) closeBtn.addEventListener('click', close);
-  if (prevBtn)  prevBtn.addEventListener('click', prev);
-  if (nextBtn)  nextBtn.addEventListener('click', next);
-
-  window.openLightbox = open;
-})();
-
-    // ===== Lightweight Console Tests =====
-; (function tests(){
-  try {
-    if (!location.search.includes('tlwtest=1')) return; // run tests only when ?tlwtest=1
-    const original = localStorage.getItem('tlw-data');
-    const sample = {
-      "2025-09-01": { reg: 8, ot: 2, regRate: 20, otRate: 30 },
-      "2025-09-02": { reg: 7.5, ot: 0.5 },
-      "2025-08-31": { reg: 3, ot: 1, regRate: 18 }
+  if(btnClear){
+    btnClear.onclick=()=>{
+      if(mainEl){ mainEl.style.backgroundImage=''; if(mainEl.dataset) delete mainEl.dataset.dataUrl; mainEl.onclick=null; mainEl.style.cursor='default'; }
+      if(thumbsWrap) thumbsWrap.innerHTML='';
+      if(camInp) camInp.value=''; if(upInp) upInp.value=''; if(moreInp) moreInp.value=''; if(camMoreInp) camMoreInp.value='';
     };
-    localStorage.setItem('tlw-data', JSON.stringify(sample));
-    const testPay = moneyForRange('2025-09-01','2025-09-30',20,30);
-    console.assert(Math.abs(testPay.rPay - ((8*20)+(7.5*20))) < 0.001, 'Regular pay test failed');
-    console.assert(Math.abs(testPay.oPay - ((2*30)+(0.5*30))) < 0.001, 'OT pay test failed');
-    const t = totalsForMonth(2025,8);
-    console.assert(Math.abs(t.reg - (8+7.5)) < 0.001 && Math.abs(t.ot - (2+0.5)) < 0.001, 'Monthly totals test failed');
-    // New: moneyForRange returns null on missing args
-    console.assert(
-      moneyForRange(null,'2025-09-30')===null &&
-      moneyForRange('2025-09-01',null)===null,
-      'moneyForRange null-guard failed'
-    );
+  }
 
-    if (original!==null) localStorage.setItem('tlw-data', original);
-    else localStorage.removeItem('tlw-data');
-  } catch(err) { console.warn('Self-tests skipped:', err); }
-})();
-  </script>
+  if(camInp) camInp.onchange=e=>{ handleFile(e.target.files && e.target.files[0]); e.target.value=''; };
+  if(upInp)  upInp.onchange =e=>{ handleFile(e.target.files && e.target.files[0]); e.target.value=''; };
+  if(camMoreInp) camMoreInp.onchange=e=>{ handleFile(e.target.files && e.target.files[0]); e.target.value=''; };
+  if(moreInp) moreInp.onchange=e=>{ [...(e.target.files||[])].forEach(f=>handleFile(f)); e.target.value=''; };
+}
+bindUploadButtons();
 
-  <!-- PWA: register service worker -->
-  <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("service-worker.js");
+/* Open Form */
+function openForm(dateKey){
+  $('#screen-home').classList.remove('active');
+  $('#screen-form').classList.add('active');
+  const d=dateKey?parseKey(dateKey):new Date();
+  $('#date').value=`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+
+  const store=load();
+  const rec=store[fmtDateKey(d)]||{};
+  $('#regHours').value=rec.reg ?? '';
+  $('#otHours').value=rec.ot ?? '';
+  $('#regRate').value=rec.regRate ?? '';
+  $('#otRate').value=rec.otRate ?? '';
+
+  const settings=JSON.parse(localStorage.getItem('tlw-settings')||'{}');
+  if(settings.keep){
+    $('#keepRange').checked=true;
+    if(settings.payStart) $('#payStart').value=settings.payStart;
+    if(settings.payEnd)   $('#payEnd').value  =settings.payEnd;
+  }else{
+    $('#keepRange').checked=false;
+    $('#payStart').value=rec.payStart ?? '';
+    $('#payEnd').value  =rec.payEnd   ?? '';
+  }
+
+  const base=Number($('#regRate').value||0);
+  if(!$('#otRate').value && base>0){ $('#otRate').value=(base*1.5).toFixed(2); $('#otRate').dataset.auto='1'; }
+  $('#regRate').addEventListener('input',()=>{
+    const b=Number($('#regRate').value||0);
+    if($('#otRate').dataset.auto==='1' || !$('#otRate').value){
+      if(b>0){ $('#otRate').value=(b*1.5).toFixed(2); $('#otRate').dataset.auto='1'; }
     }
-  </script>
+  });
+  $('#otRate').addEventListener('input',()=>{ if($('#otRate').value) $('#otRate').dataset.auto='0'; });
+
+  function syncPayRangeToDate(){
+    const dv=$('#date').value; if(!dv) return;
+    const ps=$('#payStart'), pe=$('#payEnd');
+    if(ps && ps.dataset.follow==='once'){ ps.value=dv; ps.dataset.follow='0'; }
+    if(pe && !pe.value) pe.value=dv;
+    if(pe){
+      pe.min=dv; if(!pe.value || pe.value<dv) pe.value=dv;
+    }
+  }
+  $('#date').addEventListener('change',syncPayRangeToDate);
+  $('#date').addEventListener('input', syncPayRangeToDate);
+  const psElInit=$('#payStart'); if(psElInit) psElInit.addEventListener('input',()=>{ psElInit.dataset.follow='0'; });
+  syncPayRangeToDate();
+
+  const peEl=$('#payEnd'); const psElInit2=$('#payStart');
+  if(psElInit2 && peEl){
+    const syncEndMin=()=>{ peEl.min=psElInit2.value||''; if(peEl.value && psElInit2.value && peEl.value<psElInit2.value){ peEl.value=psElInit2.value; } };
+    psElInit2.addEventListener('change',syncEndMin);
+    psElInit2.addEventListener('input', syncEndMin);
+    syncEndMin();
+  }
+
+  const main=$('#thumb'); const ts=$('#thumbs'); if(ts) ts.innerHTML=''; if(main){ main.style.backgroundImage=''; if(main.dataset) delete main.dataset.dataUrl; }
+}
+
+/* Activity */
+function openActivity(dateKey){
+  $('#screen-home').classList.remove('active');
+  $('#screen-form').classList.remove('active');
+  $('#screen-activity').classList.add('active');
+
+  if(!dateKey) dateKey=state.sel || fmtDateKey(new Date());
+  const d=parseKey(dateKey);
+
+  $('#aMonth').textContent=monthNames[d.getMonth()];
+  $('#aYear').textContent=d.getFullYear();
+  renderCalendar($('#aDays'), d.getFullYear(), d.getMonth(), {selectedKey:dateKey});
+
+  const store=load(); const rec=store[dateKey]||{};
+  $('#detailDate').textContent=d.toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  const settings=JSON.parse(localStorage.getItem('tlw-settings')||'{}');
+  let sKey=rec.payStart || settings.payStart || null;
+  if(!sKey) sKey=fmtDateKey(d);
+  let endDate=new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+  const dayReg=Number(rec.reg||0), dayOT=Number(rec.ot||0), dayTotal=dayReg+dayOT;
+  const dayRegRate=Number(rec.regRate||0), dayOtRate=Number(rec.otRate|| (dayRegRate? dayRegRate*1.5 : 0));
+  const dayRegPay=dayReg*dayRegRate, dayOtPay=dayOT*dayOtRate;
+  $('#moneyBox').innerHTML=`
+    <div style="font-weight:800;margin-bottom:6px">Today</div>
+    <div class="stat">Regular Hours: <b>${dayReg.toFixed(1)}</b></div>
+    <div class="stat">Overtime Hours: <b>${dayOT.toFixed(1)}</b></div>
+    <div class="stat">Total Day Hours: <b>${dayTotal.toFixed(1)}</b></div>
+    <div class="stat">Regular Day Earn: <b>$${dayRegPay.toFixed(2)}</b></div>
+    <div class="stat">Overtime Day Earn: <b>$${dayOtPay.toFixed(2)}</b></div>
+    <div class="stat">Total Day Earn: <b>$${(dayRegPay+dayOtPay).toFixed(2)}</b></div>`;
+
+  let accReg=0, accOT=0;
+  if(sKey){
+    const sDate=parseKey(sKey);
+    for(const [k,v] of Object.entries(store)){
+      const dk=parseKey(k);
+      if(dk>=sDate && dk<=endDate){ accReg+=Number(v.reg||0); accOT+=Number(v.ot||0); }
+    }
+  }
+  $('#rollupBox').innerHTML='<div style="font-weight:800;margin-bottom:6px">Up to date Hours</div>'
+    + `<div class="stat">Regular Hours: <b>${accReg.toFixed(0)}</b></div>
+       <div class="stat">Overtime Hours: <b>${accOT.toFixed(0)}</b></div>
+       <div class="stat">Total Hours: <b>${(accReg+accOT).toFixed(0)}</b></div>`;
+
+  const endKeyForMoney=sKey ? fmtDateKey(endDate) : null;
+  const payAgg=(sKey && endKeyForMoney) ? moneyForRange(sKey,endKeyForMoney, Number(rec.regRate||0), Number(rec.otRate||0)) : null;
+  $('#payBox').innerHTML = payAgg
+    ? `<div style="font-weight:800;margin-top:12px;margin-bottom:6px">Pay period: ${sKey?parseKey(sKey).toLocaleDateString():''} → ${endDate.toLocaleDateString()}</div>
+       <div class="stat">Regular pay: <b>$${payAgg.rPay.toFixed(2)}</b></div>
+       <div class="stat">Overtime pay: <b>$${payAgg.oPay.toFixed(2)}</b></div>
+       <div class="stat">Gross: <b>$${payAgg.gross.toFixed(2)}</b></div>`
+    : `<div>Enter a pay range to see gross totals.</div>`;
+
+  const thumbBox=$('#thumbBox'); thumbBox.innerHTML='';
+  const photos=Array.isArray(rec.photos)?rec.photos.slice(0):[];
+  photos.forEach((src,i)=>{
+    const wrap=document.createElement('div');
+    const img=document.createElement('img'); img.src=src; img.alt='Saved photo'; img.style.cursor='zoom-in';
+    img.addEventListener('click',()=>openLightbox(i,photos));
+    wrap.appendChild(img); thumbBox.appendChild(wrap);
+  });
+}
+
+/* Nav + actions */
+(function bindNav(){
+  $('#closeActivity')?.addEventListener('click',()=>{ $('#screen-activity').classList.remove('active'); $('#screen-home').classList.add('active'); paintHome(); });
+  $('#backToForm')?.addEventListener('click',()=>openForm(state.sel));
+  $('#fab')?.addEventListener('click',()=>openForm(state.sel));
+  $('#prevMo')?.addEventListener('click',()=>moveMonth(-1));
+  $('#nextMo')?.addEventListener('click',()=>moveMonth(1));
+  $('#goHomeFromForm')?.addEventListener('click',()=>{ $('#screen-form').classList.remove('active'); $('#screen-home').classList.add('active'); paintHome(); });
+  $('#resetAll')?.addEventListener('click',()=>{
+    if(confirm('Clear the pay range and this form? Saved days will stay.')){
+      const _m=readMeta(); _m.activeColor=(_m.activeColor==='green')?'orange':'green'; writeMeta(_m);
+      try{ localStorage.removeItem('tlw-settings'); }catch(_){}
+      ['date','regHours','otHours','regRate','otRate','payStart','payEnd'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+      const psFollow=$('#payStart'); if(psFollow) psFollow.dataset.follow='once';
+      const keep=$('#keepRange'); if(keep) keep.checked=false;
+      const t=$('#thumb'); if(t){ t.style.backgroundImage=''; if(t.dataset) delete t.dataset.dataUrl; }
+      const ts=$('#thumbs'); if(ts) ts.innerHTML='';
+      openForm(state.sel);
+    }
+  });
+})();
+
+/* Fresh-start via ?fresh=1 */
+(function freshStart(){
+  try{
+    const params=new URLSearchParams(location.search);
+    if(params.get('fresh')==='1'){
+      localStorage.removeItem('tlw-data');
+      localStorage.removeItem('tlw-settings');
+      localStorage.removeItem('tlw-meta');
+      if(history && history.replaceState){
+        const url=location.origin+location.pathname+location.hash;
+        history.replaceState(null,'',url);
+      }
+    }
+  }catch(_){}
+})();
+
+/* Init */
+(function init(){
+  const now=new Date();
+  state.year=now.getFullYear(); state.month=now.getMonth(); state.sel=fmtDateKey(now);
+  const meta=readMeta(); if(!meta.activeColor){ meta.activeColor='orange'; writeMeta(meta); }
+  paintHome();
+})();
+
+/* Share / QR */
+(function shareFeature(){
+  const APP_URL='https://ker43d.github.io/time-log-worksheet/';
+  const btn=$('#shareBtn'), overlay=$('#shareOverlay'), closeBtn=$('#closeShareBtn'), copyBtn=$('#copyLinkBtn'), nativeBtn=$('#nativeShareBtn'), urlEl=$('#shareUrlText'), qrImg=$('#qrImg');
+  if(!btn||!overlay) return;
+  const setUrl=u=>{ urlEl.textContent=u; qrImg.src='https://api.qrserver.com/v1/create-qr-code/?size=220x220&data='+encodeURIComponent(u); };
+  setUrl(APP_URL);
+  const openSheet=()=>{ overlay.classList.add('show'); overlay.setAttribute('aria-hidden','false'); };
+  const closeSheet=()=>{ overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true'); };
+  btn.addEventListener('click', async ()=>{
+    if(navigator.share){
+      try{ await navigator.share({ title:'LogSheet', text:'Track hours & pay fast', url:APP_URL }); return; }catch(_){}
+    }
+    openSheet();
+  });
+  copyBtn.addEventListener('click', async ()=>{
+    try{ await navigator.clipboard.writeText(APP_URL); copyBtn.textContent='Copied!'; setTimeout(()=>copyBtn.textContent='Copy',1200); }
+    catch(_){ alert('Copy failed—long-press the link to copy.'); }
+  });
+  nativeBtn.addEventListener('click', async ()=>{
+    if(!navigator.share){ openSheet(); return; }
+    try{ await navigator.share({ title:'LogSheet', text:'Track hours & pay fast', url:APP_URL }); }catch(_){}
+  });
+  closeBtn.addEventListener('click', closeSheet);
+  overlay.addEventListener('click',(e)=>{ if(e.target===overlay) closeSheet(); });
+})();
+
+/* Lightbox */
+(function lightbox(){
+  let list=[], idx=0;
+  const el=$('#lightbox'), img=$('#lbImg'), closeBtn=$('#lbClose'), prevBtn=$('#lbPrev'), nextBtn=$('#lbNext'), counter=$('#lbCounter');
+  function show(){ if(!list.length) return; img.src=list[idx]; counter.textContent=(idx+1)+' / '+list.length; }
+  function open(i,arr){ list=Array.isArray(arr)?arr.slice():[]; idx=Math.max(0,Math.min(i||0,list.length-1)); el.classList.add('show'); el.setAttribute('aria-hidden','false'); show(); document.addEventListener('keydown',onKey); }
+  function close(){ el.classList.remove('show'); el.setAttribute('aria-hidden','true'); document.removeEventListener('keydown',onKey); }
+  function prev(){ if(!list.length) return; idx=(idx-1+list.length)%list.length; show(); }
+  function next(){ if(!list.length) return; idx=(idx+1)%list.length; show(); }
+  function onKey(e){ if(e.key==='Escape') close(); if(e.key==='ArrowLeft') prev(); if(e.key==='ArrowRight') next(); }
+  el.addEventListener('click',(e)=>{ if(e.target===el) close(); });
+  closeBtn?.addEventListener('click',close);
+  prevBtn?.addEventListener('click',prev);
+  nextBtn?.addEventListener('click',next);
+  window.openLightbox=open;
+})();
+</script>
+
+<!-- PWA: register service worker -->
+<script>
+if("serviceWorker" in navigator){ navigator.serviceWorker.register("service-worker.js"); }
+</script>
 </body>
 </html>
