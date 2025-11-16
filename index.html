@@ -207,11 +207,11 @@ input[type="date"]::-webkit-calendar-picker-indicator{
 
 /* Some Android/Samsung builds need a bit more right padding */
 @supports (-webkit-touch-callout: none) {
-  input[type="date"]{ padding-right: 5.0em; }   /* bump to 4.8em if a digit still clips */
+  input[type="date"]{ padding-right: 4.0em; }   /* bump to 4.8em if a digit still clips */
 }
 
   @media (max-width: 420px){
-  input[type="date"]{ padding-right: 38px; }  /* bump to 52px if a digit still clips */
+  input[type="date"]{ padding-right: 36px; }  /* bump to 52px if a digit still clips */
 }
   
 </style>
@@ -831,6 +831,7 @@ if("serviceWorker" in navigator){ navigator.serviceWorker.register("service-work
 </script>
 </body>
 </html>
+
 
 
 
