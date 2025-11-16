@@ -957,29 +957,48 @@ bindUploadButtons();
 
     // ===== Lightbox (view saved photos) =====
 ; (function lightbox(){
-      let list = [];
-      let idx = 0;
-      const el = document.getElementById('lightbox');
-      const img = document.getElementById('lbImg');
-      const closeBtn = document.getElementById('lbClose');
-      const prevBtn = document.getElementById('lbPrev');
-      const nextBtn = document.getElementById('lbNext');
-      const counter = document.getElementById('lbCounter');
+  let list = [];
+  let idx = 0;
+  const el = document.getElementById('lightbox');
+  const img = document.getElementById('lbImg');
+  const closeBtn = document.getElementById('lbClose');
+  const prevBtn = document.getElementById('lbPrev');
+  const nextBtn = document.getElementById('lbNext');
+  const counter = document.getElementById('lbCounter');
 
-      function show(){ if (!list.length) return; img.src = list[idx]; counter.textContent = (idx+1) + ' / ' + list.length; }
-      function open(i, arr){ list = Array.isArray(arr)? arr.slice() : []; idx = Math.max(0, Math.min(i||0, list.length-1)); el.classList.add('show'); el.setAttribute('aria-hidden','false'); show(); document.addEventListener('keydown', onKey); }
-      function close(){ el.classList.remove('show'); el.setAttribute('aria-hidden','true'); document.removeEventListener('keydown', onKey); }
-      function prev(){ if (!list.length) return; idx = (idx-1+list.length)%list.length; show(); }
-      function next(){ if (!list.length) return; idx = (idx+1)%list.length; show(); }
-      function onKey(e){ if(e.key==='Escape') close(); if(e.key==='ArrowLeft') prev(); if(e.key==='ArrowRight') next(); }
+  function show(){
+    if (!list.length) return;
+    img.src = list[idx];
+    counter.textContent = (idx+1) + ' / ' + list.length;
+  }
+  function open(i, arr){
+    list = Array.isArray(arr) ? arr.slice() : [];
+    idx = Math.max(0, Math.min(i||0, list.length-1));
+    el.classList.add('show');
+    el.setAttribute('aria-hidden','false');
+    show();
+    document.addEventListener('keydown', onKey);
+  }
+  function close(){
+    el.classList.remove('show');
+    el.setAttribute('aria-hidden','true');
+    document.removeEventListener('keydown', onKey);
+  }
+  function prev(){ if (!list.length) return; idx = (idx-1+list.length)%list.length; show(); }
+  function next(){ if (!list.length) return; idx = (idx+1)%list.length; show(); }
+  function onKey(e){
+    if (e.key==='Escape') close();
+    if (e.key==='ArrowLeft') prev();
+    if (e.key==='ArrowRight') next();
+  }
 
-      el.addEventListener('click', (e)=>{ if(e.target===el) close(); });
-      closeBtn.addEventListener('click', close);
-      prevBtn.addEventListener('click', prev);
-      nextBtn.addEventListener('click', next);
+  el.addEventListener('click', (e)=>{ if(e.target===el) close(); });
+  if (closeBtn) closeBtn.addEventListener('click', close);
+  if (prevBtn)  prevBtn.addEventListener('click', prev);
+  if (nextBtn)  nextBtn.addEventListener('click', next);
 
-      window.openLightbox = open;
-    })();
+  window.openLightbox = open;
+})();
 
     // ===== Lightweight Console Tests =====
 ; (function tests(){
@@ -1018,6 +1037,7 @@ bindUploadButtons();
   </script>
 </body>
 </html>
+
 
 
 
