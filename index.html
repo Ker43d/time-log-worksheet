@@ -167,13 +167,13 @@ html,body{ width:100%; overflow-x:hidden; }
 .gallery{ display:grid; gap:10px; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); align-items:start; margin:8px 16px 0; }
 .gallery img{ width:100%; height:auto; border-radius:8px; box-shadow:0 4px 12px #0002; display:block; }
 
-/* PHONE-SAFE DATE INPUT — single source of truth */
+/* PHONE MINI-CAL — smaller icon, more text room */
 input[type="date"]{
   appearance: auto;
   -webkit-appearance: auto;
   width: 100%;
   box-sizing: border-box;
-  padding: 10px 3.8em 10px 12px;   /* space for the picker button */
+  padding: 10px 3.2em 10px 12px;  /* space for the (now smaller) icon */
   border-radius: 10px;
   border: 1px solid #d1d5db;
   background: #fff;
@@ -181,33 +181,33 @@ input[type="date"]{
   box-shadow: 0 1px 0 #fff inset;
 }
 
-/* Let the text use all remaining width (prevents clipping) */
+/* Let date text shrink properly in the 2-col row */
 input[type="date"]::-webkit-datetime-edit,
 input[type="date"]::-webkit-datetime-edit-fields-wrapper{
   min-width: 0;
-  padding-right: 0;
   overflow: hidden;
-  text-overflow: clip;
 }
 
-/* Keep native button, but don’t position it over the text */
+/* Shrink the native mini-calendar button */
 input[type="date"]::-webkit-calendar-picker-indicator{
   opacity: 1;
-  cursor: pointer;
-  width: 1.6em;
-  height: 1.6em;
-  margin: 0;               /* no extra margin that pushes text */
+  width: 1.15em;          /* smaller than default */
+  height: 1.15em;
+  transform: scale(.82);  /* extra shrink on some Android builds */
+  transform-origin: right center;
+  margin: 0;
   padding: 0;
-  background: none;        /* use the platform icon */
+  background: none;       /* keep platform icon; no extra image */
+  cursor: pointer;
 }
 
-/* Ensure the two-column row can shrink on narrow phones */
+/* Make the two columns collapse cleanly on narrow phones */
 .row-2 { grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 10px; }
 .row-2 > label { min-width: 0; }
 
-/* Some Android/Samsung builds need a bit more right padding */
+/* Some phones still render the icon a bit wide — add a little space */
 @supports (-webkit-touch-callout: none) {
-  input[type="date"]{ padding-right: 4.0em; }   /* bump to 4.8em if a digit still clips */
+  input[type="date"]{ padding-right: 3.6em; }  /* nudge to 3.8em if a digit clips */
 }
 
   @media (max-width: 420px){
@@ -831,6 +831,7 @@ if("serviceWorker" in navigator){ navigator.serviceWorker.register("service-work
 </script>
 </body>
 </html>
+
 
 
 
