@@ -296,7 +296,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{
             <button class="iconbtn" id="btnClearPhotos" type="button" title="Remove all selected photos">🗑️ Clear Photos</button>
           </div>
           <input type="file" accept="image/*" capture="environment" id="camCapture" hidden />
-          <input type="file" accept="image/*" id="fileUpload" hidden />
+          <input type="file" accept="image/*" id="fileUpload" multiple hidden />
           <div class="thumb" id="thumb"></div>
           <div class="thumbs" id="thumbs"></div>
         </div>
@@ -858,6 +858,7 @@ if("serviceWorker" in navigator){ navigator.serviceWorker.register("service-work
 </script>
 </body>
 </html>
+
 
 
 
