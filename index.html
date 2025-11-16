@@ -172,6 +172,21 @@
       input, select, textarea { font-size: 16px !important; }
     }
 
+    /* --- Fix: right-edge cut on the form page (narrow webviews) --- */
+.app{
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;           /* hard center */
+}
+
+html, body { overflow-x: hidden; } /* prevent any horizontal push */
+
+#screen-form .form{
+  padding-left: 16px;       /* keep content inside the edge */
+  padding-right: 16px;
+  max-width: 100%;
+}
+
   </style>
 </head>
 <body>
@@ -988,4 +1003,5 @@ bindUploadButtons();
   </script>
 </body>
 </html>
+
 
