@@ -166,6 +166,28 @@ html,body{ width:100%; overflow-x:hidden; }
 .lb-counter{ position:absolute; bottom:14px; left:50%; transform:translateX(-50%); color:#fff; font-weight:700; background:rgba(0,0,0,.35); padding:6px 10px; border-radius:999px; font-size:12px; }
 .gallery{ display:grid; gap:10px; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); align-items:start; margin:8px 16px 0; }
 .gallery img{ width:100%; height:auto; border-radius:8px; box-shadow:0 4px 12px #0002; display:block; }
+
+  /* Lock date boxes inside the grid on Android */
+.row-2 { grid-template-columns: minmax(0,1fr) minmax(0,1fr); } /* allow shrink */
+.row-2 label { min-width: 0; }                                /* no overflow from labels */
+
+.row-2 input[type="date"]{
+  display:block;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  overflow: clip;                 /* clip the internal control so it can't spill out */
+}
+
+/* Slightly smaller indicator + no extra margins */
+input[type="date"]{ padding-right:32px; }  /* was 40px */
+input[type="date"]::-webkit-calendar-picker-indicator{
+  width:1.2em;
+  height:1.2em;
+  margin:0;              /* prevent the glyph from pushing outside */
+  padding:0;
+}
+
 </style>
 </head>
 <body>
@@ -783,3 +805,4 @@ if("serviceWorker" in navigator){ navigator.serviceWorker.register("service-work
 </script>
 </body>
 </html>
+
