@@ -858,6 +858,16 @@ function openActivity(dateKey){
 <script>
 if("serviceWorker" in navigator){ navigator.serviceWorker.register("service-worker.js"); }
 </script>
+
+  <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/time-log-worksheet/service-worker.js')
+      .then(() => console.log('SW registered'))
+      .catch(err => console.error('SW error', err));
+  }
+</script>
+
 </body>
 </html>
+
 
