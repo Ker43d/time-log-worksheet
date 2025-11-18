@@ -1,7 +1,9 @@
 {
+  "id": "/time-log-worksheet/",
   "name": "Time Log Worksheet",
   "short_name": "Time Log",
-  "start_url": ".",
+  "start_url": "/time-log-worksheet/?source=pwa",
+  "scope": "/time-log-worksheet/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#e21d2f",
@@ -10,3 +12,4 @@
     { "src": "app-icon-512.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
+
