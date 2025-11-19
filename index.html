@@ -853,12 +853,6 @@ function openActivity(dateKey){
   window.openLightbox=open;
 })();
 </script>
-
-<!-- PWA: register service worker -->
-<script>
-if("serviceWorker" in navigator){ navigator.serviceWorker.register("service-worker.js"); }
-</script>
-
 <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('service-worker.js');
@@ -867,6 +861,7 @@ if("serviceWorker" in navigator){ navigator.serviceWorker.register("service-work
 
 </body>
 </html>
+
 
 
 
