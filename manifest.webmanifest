@@ -2,6 +2,7 @@
   "id": "/time-log-worksheet/",
   "name": "Time Log Worksheet",
   "short_name": "Time Log",
+  "description": "Simple timesheet for logging regular and overtime hours.",
   "start_url": "/time-log-worksheet/?source=pwa",
   "scope": "/time-log-worksheet/",
   "display": "standalone",
@@ -12,4 +13,5 @@
     { "src": "app-icon-512.png", "sizes": "512x512", "type": "image/png" }
   ],
 }
+
 
